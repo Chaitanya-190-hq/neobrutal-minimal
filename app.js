@@ -60,10 +60,8 @@ function loadData() {
   try {
     const archivesRaw = localStorage.getItem(STORAGE_KEY_ARCHIVES);
     state.archives = archivesRaw ? JSON.parse(archivesRaw) : [];
-
     const vaultRaw = localStorage.getItem(STORAGE_KEY_VAULT);
     state.vaultEntries = vaultRaw ? JSON.parse(vaultRaw) : [];
-
     state.isDarkMode = localStorage.getItem(STORAGE_KEY_DARK_MODE) === 'true';
     state.isPrintMode = localStorage.getItem(STORAGE_KEY_PRINT_MODE) === 'true';
   } catch (e) {
@@ -73,41 +71,26 @@ function loadData() {
   }
 }
 
-function saveArchives() {
-  localStorage.setItem(STORAGE_KEY_ARCHIVES, JSON.stringify(state.archives));
-}
-
-function saveVault() {
-  localStorage.setItem(STORAGE_KEY_VAULT, JSON.stringify(state.vaultEntries));
-}
+function saveArchives() { localStorage.setItem(STORAGE_KEY_ARCHIVES, JSON.stringify(state.archives)); }
+function saveVault() { localStorage.setItem(STORAGE_KEY_VAULT, JSON.stringify(state.vaultEntries)); }
 
 function getNextArchiveId() {
   let counter = parseInt(localStorage.getItem(STORAGE_KEY_COUNTER) || '0', 10);
   counter++;
   localStorage.setItem(STORAGE_KEY_COUNTER, counter.toString());
-  return `CA-${String(counter).padStart(4, '0')}`;
+  return 'CA-' + String(counter).padStart(4, '0');
 }
 
 function getNextVaultId() {
   let counter = parseInt(localStorage.getItem(STORAGE_KEY_VAULT_COUNTER) || '0', 10);
   counter++;
   localStorage.setItem(STORAGE_KEY_VAULT_COUNTER, counter.toString());
-  return `FV-${String(counter).padStart(4, '0')}`;
+  return 'FV-' + String(counter).padStart(4, '0');
 }
 
-function getArchivesCount() {
-  return state.archives.length;
-}
-
-function getVaultCount() {
-  return state.vaultEntries.length;
-}
-
-function getCategoriesUsed() {
-  const cats = new Set(state.archives.map(a => a.category));
-  return cats.size;
-}
-
+function getArchivesCount() { return state.archives.length; }
+function getVaultCount() { return state.vaultEntries.length; }
+function getCategoriesUsed() { return new Set(state.archives.map(a => a.category)).size; }
 function getTopImportance() {
   if (state.archives.length === 0) return 0;
   return Math.max(...state.archives.map(a => a.importance || 1));
@@ -118,19 +101,11 @@ function getTopImportance() {
 // ============================================================
 function createArchive(data) {
   const archive = {
-    id: getNextArchiveId(),
-    title: data.title,
-    category: data.category,
-    description: data.description,
-    date: data.date,
-    tags: data.tags || [],
-    importance: data.importance || 3,
-    mood: data.mood || '',
-    fileNames: data.fileNames || [],
-    notes: data.notes || '',
-    futureMessage: data.futureMessage || '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    id: getNextArchiveId(), title: data.title, category: data.category,
+    description: data.description, date: data.date, tags: data.tags || [],
+    importance: data.importance || 3, mood: data.mood || '', fileNames: data.fileNames || [],
+    notes: data.notes || '', futureMessage: data.futureMessage || '',
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
   };
   state.archives.unshift(archive);
   saveArchives();
@@ -140,40 +115,23 @@ function createArchive(data) {
 function updateArchive(id, data) {
   const index = state.archives.findIndex(a => a.id === id);
   if (index === -1) return null;
-  state.archives[index] = {
-    ...state.archives[index],
-    ...data,
-    id: state.archives[index].id,
-    createdAt: state.archives[index].createdAt,
-    updatedAt: new Date().toISOString()
-  };
+  state.archives[index] = { ...state.archives[index], ...data, id: state.archives[index].id, createdAt: state.archives[index].createdAt, updatedAt: new Date().toISOString() };
   saveArchives();
   return state.archives[index];
 }
 
-function deleteArchive(id) {
-  state.archives = state.archives.filter(a => a.id !== id);
-  saveArchives();
-}
-
-function getArchive(id) {
-  return state.archives.find(a => a.id === id);
-}
+function deleteArchive(id) { state.archives = state.archives.filter(a => a.id !== id); saveArchives(); }
+function getArchive(id) { return state.archives.find(a => a.id === id); }
 
 // ============================================================
 // VAULT CRUD
 // ============================================================
 function createVaultEntry(data) {
   const entry = {
-    id: getNextVaultId(),
-    title: data.title,
-    serialNumber: data.serialNumber || '',
-    accountRef: data.accountRef || '',
-    preservationId: data.preservationId || '',
-    reminder: data.reminder || '',
-    reference: data.reference || '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    id: getNextVaultId(), title: data.title, serialNumber: data.serialNumber || '',
+    accountRef: data.accountRef || '', preservationId: data.preservationId || '',
+    reminder: data.reminder || '', reference: data.reference || '',
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
   };
   state.vaultEntries.unshift(entry);
   saveVault();
@@ -183,72 +141,33 @@ function createVaultEntry(data) {
 function updateVaultEntry(id, data) {
   const index = state.vaultEntries.findIndex(e => e.id === id);
   if (index === -1) return null;
-  state.vaultEntries[index] = {
-    ...state.vaultEntries[index],
-    ...data,
-    id: state.vaultEntries[index].id,
-    createdAt: state.vaultEntries[index].createdAt,
-    updatedAt: new Date().toISOString()
-  };
+  state.vaultEntries[index] = { ...state.vaultEntries[index], ...data, id: state.vaultEntries[index].id, createdAt: state.vaultEntries[index].createdAt, updatedAt: new Date().toISOString() };
   saveVault();
   return state.vaultEntries[index];
 }
 
-function deleteVaultEntry(id) {
-  state.vaultEntries = state.vaultEntries.filter(e => e.id !== id);
-  saveVault();
-}
-
-function getVaultEntry(id) {
-  return state.vaultEntries.find(e => e.id === id);
-}
+function deleteVaultEntry(id) { state.vaultEntries = state.vaultEntries.filter(e => e.id !== id); saveVault(); }
+function getVaultEntry(id) { return state.vaultEntries.find(e => e.id === id); }
 
 // ============================================================
 // NAVIGATION
 // ============================================================
 function navigateTo(page, params = {}) {
   state.currentPage = page;
-
-  // Update sidebar active state
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.page === page);
-  });
-
-  // Toggle pages
+  document.querySelectorAll('.nav-item').forEach(item => { item.classList.toggle('active', item.dataset.page === page); });
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const targetPage = document.getElementById(`page-${page}`);
-  if (targetPage) {
-    targetPage.classList.add('active');
-  }
+  const targetPage = document.getElementById('page-' + page);
+  if (targetPage) targetPage.classList.add('active');
 
-  // Handle specific page setup
   switch (page) {
-    case 'dashboard':
-      renderDashboard();
-      break;
-    case 'archives':
-      renderArchivesList();
-      break;
-    case 'archive-form':
-      setupForm(params.editId || null);
-      break;
-    case 'archive-detail':
-      if (params.id) {
-        state.currentArchiveId = params.id;
-        renderArchiveDetail(params.id);
-      }
-      break;
-    case 'future-vault':
-      renderVaultList();
-      break;
-    case 'timeline':
-      renderTimeline();
-      break;
-    case 'settings':
-      renderSettings();
-      break;
+    case 'dashboard': renderDashboard(); break;
+    case 'archives': renderArchivesList(); break;
+    case 'archive-form': setupForm(params.editId || null); break;
+    case 'archive-detail': if (params.id) { state.currentArchiveId = params.id; renderArchiveDetail(params.id); } break;
+    case 'future-vault': renderVaultList(); break;
+    case 'timeline': renderTimeline(); break;
+    case 'settings': renderSettings(); break;
   }
-
   updateSidebarStats();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -257,16 +176,11 @@ function navigateTo(page, params = {}) {
 // DASHBOARD
 // ============================================================
 function renderDashboard() {
-  const total = getArchivesCount();
-  const vault = getVaultCount();
-  const categories = getCategoriesUsed();
+  document.querySelector('#stat-total .stat-value').textContent = getArchivesCount();
+  document.querySelector('#stat-vault .stat-value').textContent = getVaultCount();
+  document.querySelector('#stat-categories .stat-value').textContent = getCategoriesUsed();
   const topImp = getTopImportance();
-
-  document.querySelector('#stat-total .stat-value').textContent = total;
-  document.querySelector('#stat-vault .stat-value').textContent = vault;
-  document.querySelector('#stat-categories .stat-value').textContent = categories;
-  document.querySelector('#stat-importance .stat-value').textContent = topImp > 0 ? '★'.repeat(topImp) : '★';
-
+  document.querySelector('#stat-importance .stat-value').textContent = topImp > 0 ? '\u2605'.repeat(topImp) : '\u2605';
   renderCategoryBars();
   renderRecentArchives();
   renderImportanceBars();
@@ -274,67 +188,27 @@ function renderDashboard() {
 
 function renderCategoryBars() {
   const container = document.getElementById('category-bars');
-  if (state.archives.length === 0) {
-    container.innerHTML = '<div class="empty-state">No archives yet. Create your first archive to see distribution.</div>';
-    return;
-  }
-
+  if (state.archives.length === 0) { container.innerHTML = '<div class="empty-state">No archives yet. Create your first archive to see distribution.</div>'; return; }
   const counts = {};
-  state.archives.forEach(a => {
-    counts[a.category] = (counts[a.category] || 0) + 1;
-  });
-
+  state.archives.forEach(a => { counts[a.category] = (counts[a.category] || 0) + 1; });
   const maxCount = Math.max(...Object.values(counts));
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-
-  container.innerHTML = sorted.map(([cat, count]) => `
-    <div class="category-bar-row">
-      <span class="category-bar-label">${cat}</span>
-      <div class="category-bar-track">
-        <div class="category-bar-fill" style="width: ${(count / maxCount) * 100}%"></div>
-      </div>
-      <span class="category-bar-count">${count}</span>
-    </div>
-  `).join('');
+  container.innerHTML = sorted.map(([cat, count]) => '<div class="category-bar-row"><span class="category-bar-label">' + cat + '</span><div class="category-bar-track"><div class="category-bar-fill" style="width: ' + (count / maxCount * 100) + '%"></div></div><span class="category-bar-count">' + count + '</span></div>').join('');
 }
 
 function renderRecentArchives() {
   const container = document.getElementById('recent-list');
   const recent = state.archives.slice(0, 5);
-
-  if (recent.length === 0) {
-    container.innerHTML = '<div class="empty-state">No recent archives.</div>';
-    return;
-  }
-
-  container.innerHTML = recent.map(a => `
-    <div class="recent-item" onclick="navigateTo('archive-detail', { id: '${a.id}' })">
-      <span class="recent-item-id">${a.id}</span>
-      <span class="recent-item-title">${escHtml(a.title)}</span>
-      <span class="recent-item-category">${escHtml(a.category)}</span>
-    </div>
-  `).join('');
+  if (recent.length === 0) { container.innerHTML = '<div class="empty-state">No recent archives.</div>'; return; }
+  container.innerHTML = recent.map(a => '<div class="recent-item" onclick="navigateTo(\'archive-detail\', { id: \'' + a.id + '\' })"><span class="recent-item-id">' + a.id + '</span><span class="recent-item-title">' + escHtml(a.title) + '</span><span class="recent-item-category">' + escHtml(a.category) + '</span></div>').join('');
 }
 
 function renderImportanceBars() {
   const container = document.getElementById('importance-bars');
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-  state.archives.forEach(a => {
-    const imp = a.importance || 3;
-    counts[imp] = (counts[imp] || 0) + 1;
-  });
-
+  state.archives.forEach(a => { const imp = a.importance || 3; counts[imp] = (counts[imp] || 0) + 1; });
   const maxCount = Math.max(...Object.values(counts), 1);
-
-  container.innerHTML = [5, 4, 3, 2, 1].map(imp => `
-    <div class="importance-bar-row">
-      <span class="importance-bar-label">${'★'.repeat(imp)}</span>
-      <div class="importance-bar-track">
-        <div class="importance-bar-fill" style="width: ${(counts[imp] / maxCount) * 100}%"></div>
-      </div>
-      <span class="importance-bar-count">${counts[imp]}</span>
-    </div>
-  `).join('');
+  container.innerHTML = [5, 4, 3, 2, 1].map(imp => '<div class="importance-bar-row"><span class="importance-bar-label">' + '\u2605'.repeat(imp) + '</span><div class="importance-bar-track"><div class="importance-bar-fill" style="width: ' + (counts[imp] / maxCount * 100) + '%"></div></div><span class="importance-bar-count">' + counts[imp] + '</span></div>').join('');
 }
 
 // ============================================================
@@ -343,143 +217,31 @@ function renderImportanceBars() {
 function renderArchivesList() {
   const container = document.getElementById('archives-grid');
   let filtered = [...state.archives];
-
-  // Search
   const query = state.searchQuery.toLowerCase().trim();
-  if (query) {
-    filtered = filtered.filter(a =>
-      a.title.toLowerCase().includes(query) ||
-      a.category.toLowerCase().includes(query) ||
-      a.id.toLowerCase().includes(query) ||
-      (a.tags && a.tags.some(t => t.toLowerCase().includes(query))) ||
-      a.description.toLowerCase().includes(query)
-    );
-  }
-
-  // Filter category
-  if (state.filterCategory !== 'all') {
-    filtered = filtered.filter(a => a.category === state.filterCategory);
-  }
-
-  // Filter importance
-  if (state.filterImportance !== 'all') {
-    filtered = filtered.filter(a => (a.importance || 3) === parseInt(state.filterImportance));
-  }
-
-  // Sort
+  if (query) { filtered = filtered.filter(a => a.title.toLowerCase().includes(query) || a.category.toLowerCase().includes(query) || a.id.toLowerCase().includes(query) || (a.tags && a.tags.some(t => t.toLowerCase().includes(query))) || a.description.toLowerCase().includes(query)); }
+  if (state.filterCategory !== 'all') { filtered = filtered.filter(a => a.category === state.filterCategory); }
+  if (state.filterImportance !== 'all') { filtered = filtered.filter(a => (a.importance || 3) === parseInt(state.filterImportance)); }
   switch (state.filterSort) {
-    case 'newest':
-      filtered.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
-      break;
-    case 'oldest':
-      filtered.sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt));
-      break;
-    case 'title':
-      filtered.sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case 'importance':
-      filtered.sort((a, b) => (b.importance || 1) - (a.importance || 1));
-      break;
+    case 'newest': filtered.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt)); break;
+    case 'oldest': filtered.sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt)); break;
+    case 'title': filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+    case 'importance': filtered.sort((a, b) => (b.importance || 1) - (a.importance || 1)); break;
   }
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">No archives found. Create your first archive to begin preserving.</div>';
-    return;
-  }
-
+  if (filtered.length === 0) { container.innerHTML = '<div class="empty-state" style="grid-column: 1/-1;">No archives found. Create your first archive to begin preserving.</div>'; return; }
   container.innerHTML = filtered.map(a => renderArchiveCard(a)).join('');
 }
 
 function renderArchiveCard(archive) {
-  const stars = '★'.repeat(archive.importance || 3) + '☆'.repeat(5 - (archive.importance || 3));
   const moodEmoji = archive.mood ? MOODS.find(m => m.value === archive.mood)?.emoji || '' : '';
   const tags = (archive.tags || []).slice(0, 3);
-
-  return `
-    <div class="archive-card" onclick="navigateTo('archive-detail', { id: '${archive.id}' })">
-      <div class="archive-card-stamp">
-        <div class="archive-card-stamp-inner">CHAI<br/>ARCHIVE</div>
-      </div>
-      <div class="archive-card-header">
-        <span class="archive-card-id">${archive.id}</span>
-        <span class="archive-card-category">${escHtml(archive.category)}</span>
-      </div>
-      <div class="archive-card-body">
-        <div class="archive-card-title">${escHtml(archive.title)}</div>
-        <div class="archive-card-desc">${escHtml(archive.description)}</div>
-        ${moodEmoji ? `<div class="archive-card-mood">${moodEmoji}</div>` : ''}
-      </div>
-      <div class="archive-card-footer">
-        <span class="archive-card-date">📅 ${formatDate(archive.date || archive.createdAt)}</span>
-        <div class="archive-card-tags">
-          ${tags.map(t => `<span class="archive-card-tag">${escHtml(t)}</span>`).join('')}
-          ${(archive.tags || []).length > 3 ? `<span class="archive-card-tag">+${archive.tags.length - 3}</span>` : ''}
-        </div>
-      </div>
-    </div>
-  `;
+  return '<div class="archive-card" onclick="navigateTo(\'archive-detail\', { id: \'' + archive.id + '\' })"><div class="archive-card-stamp"><div class="archive-card-stamp-inner">CHAI<br/>ARCHIVE</div></div><div class="archive-card-header"><span class="archive-card-id">' + archive.id + '</span><span class="archive-card-category">' + escHtml(archive.category) + '</span></div><div class="archive-card-body"><div class="archive-card-title">' + escHtml(archive.title) + '</div><div class="archive-card-desc">' + escHtml(archive.description) + '</div>' + (moodEmoji ? '<div class="archive-card-mood">' + moodEmoji + '</div>' : '') + '</div><div class="archive-card-footer"><span class="archive-card-date">\uD83D\uDCC5 ' + formatDate(archive.date || archive.createdAt) + '</span><div class="archive-card-tags">' + tags.map(t => '<span class="archive-card-tag">' + escHtml(t) + '</span>').join('') + ((archive.tags || []).length > 3 ? '<span class="archive-card-tag">+' + (archive.tags.length - 3) + '</span>' : '') + '</div></div></div>';
 }
 
 function renderArchiveCardDetail(archive) {
-  const stars = '★'.repeat(archive.importance || 3) + '☆'.repeat(5 - (archive.importance || 3));
+  const stars = '\u2605'.repeat(archive.importance || 3) + '\u2606'.repeat(5 - (archive.importance || 3));
   const moodEmoji = archive.mood ? MOODS.find(m => m.value === archive.mood) : null;
   const tags = archive.tags || [];
-
-  return `
-    <div class="archive-card-detail-wrapper" id="export-card">
-      <div class="archive-card-stamp">
-        <div class="archive-card-stamp-inner">CHAI<br/>ARCHIVE</div>
-      </div>
-      <div class="archive-card-header">
-        <span class="archive-card-id">${archive.id}</span>
-        <span class="archive-card-category">${escHtml(archive.category)}</span>
-      </div>
-      <div class="archive-card-body">
-        <div class="archive-card-title">${escHtml(archive.title)}</div>
-        <div class="archive-card-desc">${escHtml(archive.description)}</div>
-      </div>
-      <div class="detail-full-content">
-        <div class="detail-field">
-          <span class="detail-field-label">Date</span>
-          <span class="detail-field-value">${formatDate(archive.date || archive.createdAt)}</span>
-        </div>
-        <div class="detail-field">
-          <span class="detail-field-label">Importance</span>
-          <span class="detail-field-value archive-card-importance">${stars}</span>
-        </div>
-        ${moodEmoji ? `
-        <div class="detail-field">
-          <span class="detail-field-label">Mood</span>
-          <span class="detail-field-value">${moodEmoji.emoji} ${moodEmoji.label}</span>
-        </div>` : ''}
-        ${tags.length > 0 ? `
-        <div class="detail-field">
-          <span class="detail-field-label">Tags</span>
-          <span class="detail-field-value">${tags.map(t => `<span class="archive-card-tag">${escHtml(t)}</span>`).join(' ')}</span>
-        </div>` : ''}
-        ${archive.notes ? `
-        <div class="detail-field detail-field-full">
-          <span class="detail-field-label">Personal Notes</span>
-          <span class="detail-field-value">${escHtml(archive.notes)}</span>
-        </div>` : ''}
-        ${archive.futureMessage ? `
-        <div class="detail-field detail-field-full">
-          <span class="detail-field-label">✉ Future Message</span>
-          <span class="detail-field-value" style="font-style: italic; color: var(--gold-dark);">${escHtml(archive.futureMessage)}</span>
-        </div>` : ''}
-      </div>
-      <div class="archive-card-footer" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-        <div class="archive-card-tags">
-          <span class="archive-card-tag">Created: ${formatDate(archive.createdAt)}</span>
-          ${archive.updatedAt !== archive.createdAt ? `<span class="archive-card-tag">Updated: ${formatDate(archive.updatedAt)}</span>` : ''}
-        </div>
-      </div>
-      <div class="archive-branding">
-        <span class="archive-branding-left">📜 Chai Archive Logbook</span>
-        <span>${archive.id} · PRESERVED</span>
-      </div>
-    </div>
-  `;
+  return '<div class="archive-card-detail-wrapper" id="export-card"><div class="archive-card-stamp"><div class="archive-card-stamp-inner">CHAI<br/>ARCHIVE</div></div><div class="archive-card-header"><span class="archive-card-id">' + archive.id + '</span><span class="archive-card-category">' + escHtml(archive.category) + '</span></div><div class="archive-card-body"><div class="archive-card-title">' + escHtml(archive.title) + '</div><div class="archive-card-desc">' + escHtml(archive.description) + '</div></div><div class="detail-full-content"><div class="detail-field"><span class="detail-field-label">Date</span><span class="detail-field-value">' + formatDate(archive.date || archive.createdAt) + '</span></div><div class="detail-field"><span class="detail-field-label">Importance</span><span class="detail-field-value archive-card-importance">' + stars + '</span></div>' + (moodEmoji ? '<div class="detail-field"><span class="detail-field-label">Mood</span><span class="detail-field-value">' + moodEmoji.emoji + ' ' + moodEmoji.label + '</span></div>' : '') + (tags.length > 0 ? '<div class="detail-field"><span class="detail-field-label">Tags</span><span class="detail-field-value">' + tags.map(t => '<span class="archive-card-tag">' + escHtml(t) + '</span>').join(' ') + '</span></div>' : '') + (archive.notes ? '<div class="detail-field detail-field-full"><span class="detail-field-label">Personal Notes</span><span class="detail-field-value">' + escHtml(archive.notes) + '</span></div>' : '') + (archive.futureMessage ? '<div class="detail-field detail-field-full"><span class="detail-field-label">\u2709 Future Message</span><span class="detail-field-value" style="font-style: italic; color: var(--gold-dark);">' + escHtml(archive.futureMessage) + '</span></div>' : '') + '</div><div class="archive-card-footer" style="flex-direction: column; align-items: flex-start; gap: 4px;"><div class="archive-card-tags"><span class="archive-card-tag">Created: ' + formatDate(archive.createdAt) + '</span>' + (archive.updatedAt !== archive.createdAt ? '<span class="archive-card-tag">Updated: ' + formatDate(archive.updatedAt) + '</span>' : '') + '</div></div><div class="archive-branding"><span class="archive-branding-left">\uD83D\uDCDC Chai Archive Logbook</span><span>' + archive.id + ' \u00B7 PRESERVED</span></div></div>';
 }
 
 // ============================================================
@@ -488,19 +250,10 @@ function renderArchiveCardDetail(archive) {
 function renderArchiveDetail(id) {
   const archive = getArchive(id);
   const container = document.getElementById('archive-card-wrapper');
-
-  if (!archive) {
-    container.innerHTML = '<div class="empty-state">Archive not found.</div>';
-    return;
-  }
-
+  if (!archive) { container.innerHTML = '<div class="empty-state">Archive not found.</div>'; return; }
   container.innerHTML = renderArchiveCardDetail(archive);
-
-  // Set up QR modal on page
   const existingQr = document.querySelector('#qr-modal .qr-label');
-  if (existingQr) {
-    existingQr.textContent = archive.id;
-  }
+  if (existingQr) existingQr.textContent = archive.id;
 }
 
 // ============================================================
@@ -510,23 +263,17 @@ function setupForm(editId = null) {
   const form = document.getElementById('archive-form');
   form.reset();
   document.getElementById('archive-id').value = '';
-
   const titleEl = document.getElementById('form-title');
   const subtitleEl = document.getElementById('form-subtitle');
   const submitBtn = document.getElementById('form-submit');
 
   if (editId) {
     const archive = getArchive(editId);
-    if (!archive) {
-      navigateTo('archives');
-      return;
-    }
+    if (!archive) { navigateTo('archives'); return; }
     state.editingArchiveId = editId;
     titleEl.textContent = 'Edit Archive Entry';
-    subtitleEl.textContent = `Editing ${archive.id}`;
-    submitBtn.innerHTML = '<span class="btn-icon">📜</span> Update Archive';
-
-    // Fill fields
+    subtitleEl.textContent = 'Editing ' + archive.id;
+    submitBtn.innerHTML = '<span class="btn-icon">\uD83D\uDCDC</span> Update Archive';
     document.getElementById('archive-id').value = editId;
     document.getElementById('field-title').value = archive.title;
     document.getElementById('field-category').value = archive.category;
@@ -536,36 +283,29 @@ function setupForm(editId = null) {
     document.getElementById('field-mood').value = archive.mood || '';
     document.getElementById('field-notes').value = archive.notes || '';
     document.getElementById('field-future').value = archive.futureMessage || '';
-
-    // Set importance stars
     const importance = archive.importance || 3;
     document.getElementById('field-importance').value = importance;
     document.querySelectorAll('.star').forEach(star => {
       star.classList.toggle('active', parseInt(star.dataset.value) <= importance);
-      star.textContent = parseInt(star.dataset.value) <= importance ? '★' : '☆';
+      star.textContent = parseInt(star.dataset.value) <= importance ? '\u2605' : '\u2606';
     });
   } else {
     state.editingArchiveId = null;
     titleEl.textContent = 'New Archive Entry';
     subtitleEl.textContent = 'Preserve a memory, achievement, or milestone';
-    submitBtn.innerHTML = '<span class="btn-icon">📜</span> Preserve Archive';
-
-    // Set default date
+    submitBtn.innerHTML = '<span class="btn-icon">\uD83D\uDCDC</span> Preserve Archive';
     document.getElementById('field-date').value = new Date().toISOString().split('T')[0];
-
-    // Reset stars
     document.getElementById('field-importance').value = 3;
     document.querySelectorAll('.star').forEach(star => {
       const val = parseInt(star.dataset.value);
       star.classList.toggle('active', val <= 3);
-      star.textContent = val <= 3 ? '★' : '☆';
+      star.textContent = val <= 3 ? '\u2605' : '\u2606';
     });
   }
 }
 
 function handleFormSubmit(e) {
   e.preventDefault();
-
   const title = document.getElementById('field-title').value.trim();
   const category = document.getElementById('field-category').value;
   const date = document.getElementById('field-date').value;
@@ -577,28 +317,17 @@ function handleFormSubmit(e) {
   const importance = parseInt(document.getElementById('field-importance').value) || 3;
   const filesInput = document.getElementById('field-files');
   const fileNames = filesInput.files ? Array.from(filesInput.files).map(f => f.name) : [];
-
-  // Validation
-  if (!title || !category || !date || !description) {
-    showToast('Please fill in all required fields.', 'error');
-    return;
-  }
-
+  if (!title || !category || !date || !description) { showToast('Please fill in all required fields.', 'error'); return; }
   const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
-
-  const data = {
-    title, category, date, description, tags, mood, notes, futureMessage,
-    importance, fileNames
-  };
-
+  const data = { title, category, date, description, tags, mood, notes, futureMessage, importance, fileNames };
   const editId = document.getElementById('archive-id').value;
   if (editId) {
     updateArchive(editId, data);
-    showToast(`Archive ${editId} updated successfully.`, 'success');
+    showToast('Archive ' + editId + ' updated successfully.', 'success');
     navigateTo('archive-detail', { id: editId });
   } else {
     const archive = createArchive(data);
-    showToast(`Archive ${archive.id} preserved successfully.`, 'success');
+    showToast('Archive ' + archive.id + ' preserved successfully.', 'success');
     navigateTo('archive-detail', { id: archive.id });
   }
 }
@@ -609,64 +338,18 @@ function handleFormSubmit(e) {
 function renderVaultList() {
   const container = document.getElementById('vault-list');
   const query = state.vaultSearch.toLowerCase().trim();
-
   let entries = [...state.vaultEntries];
-  if (query) {
-    entries = entries.filter(e =>
-      e.title.toLowerCase().includes(query) ||
-      e.id.toLowerCase().includes(query) ||
-      (e.serialNumber || '').toLowerCase().includes(query) ||
-      (e.accountRef || '').toLowerCase().includes(query)
-    );
-  }
-
-  if (entries.length === 0) {
-    container.innerHTML = '<div class="empty-state">No vault entries yet. Create your first entry to secure important references.</div>';
-    return;
-  }
-
-  container.innerHTML = entries.map(e => `
-    <div class="vault-item" onclick="showVaultDetail('${e.id}')">
-      <div class="vault-item-id">${e.id}</div>
-      <div class="vault-item-title">${escHtml(e.title)}</div>
-      <div class="vault-item-meta">
-        ${e.serialNumber ? `<span>📋 ${escHtml(e.serialNumber)}</span>` : ''}
-        ${e.accountRef ? `<span>🔑 ${escHtml(e.accountRef)}</span>` : ''}
-        ${e.preservationId ? `<span>🏷 ${escHtml(e.preservationId)}</span>` : ''}
-      </div>
-      <div style="font-size: 11px; color: var(--text-muted);">
-        Created: ${formatDate(e.createdAt)}
-      </div>
-      <div class="vault-item-actions">
-        <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editVaultEntry('${e.id}')">✎ Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteVaultEntryConfirm('${e.id}')">🗑</button>
-      </div>
-    </div>
-  `).join('');
+  if (query) { entries = entries.filter(e => e.title.toLowerCase().includes(query) || e.id.toLowerCase().includes(query) || (e.serialNumber || '').toLowerCase().includes(query) || (e.accountRef || '').toLowerCase().includes(query)); }
+  if (entries.length === 0) { container.innerHTML = '<div class="empty-state">No vault entries yet. Create your first entry to secure important references.</div>'; return; }
+  container.innerHTML = entries.map(e => '<div class="vault-item" onclick="showVaultDetail(\'' + e.id + '\')"><div class="vault-item-id">' + e.id + '</div><div class="vault-item-title">' + escHtml(e.title) + '</div><div class="vault-item-meta">' + (e.serialNumber ? '<span>\uD83D\uDCCB ' + escHtml(e.serialNumber) + '</span>' : '') + (e.accountRef ? '<span>\uD83D\uDD11 ' + escHtml(e.accountRef) + '</span>' : '') + (e.preservationId ? '<span>\uD83C\uDFF7 ' + escHtml(e.preservationId) + '</span>' : '') + '</div><div style="font-size: 11px; color: var(--text-muted);">Created: ' + formatDate(e.createdAt) + '</div><div class="vault-item-actions"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editVaultEntry(\'' + e.id + '\')">\u270E Edit</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteVaultEntryConfirm(\'' + e.id + '\')">\uD83D\uDDD1</button></div></div>').join('');
 }
 
 function showVaultDetail(id) {
   const entry = getVaultEntry(id);
   if (!entry) return;
-
   state.currentVaultId = id;
-  document.getElementById('vault-detail-title').textContent = `${entry.id} — ${entry.title}`;
-  document.getElementById('vault-detail-body').innerHTML = `
-    <div class="settings-info-block" style="padding: 0;">
-      <p><strong>Vault ID:</strong> ${entry.id}</p>
-      <p><strong>Title:</strong> ${escHtml(entry.title)}</p>
-      ${entry.serialNumber ? `<p><strong>Serial Number:</strong> ${escHtml(entry.serialNumber)}</p>` : ''}
-      ${entry.accountRef ? `<p><strong>Account Reference:</strong> ${escHtml(entry.accountRef)}</p>` : ''}
-      ${entry.preservationId ? `<p><strong>Preservation ID:</strong> ${escHtml(entry.preservationId)}</p>` : ''}
-      ${entry.reminder ? `<p><strong>Future Reminder:</strong> ${formatDate(entry.reminder)}</p>` : ''}
-      ${entry.reference ? `<p><strong>Reference:</strong> ${escHtml(entry.reference)}</p>` : ''}
-      <p style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">
-        Created: ${formatDate(entry.createdAt)}
-        ${entry.updatedAt !== entry.createdAt ? ` | Updated: ${formatDate(entry.updatedAt)}` : ''}
-      </p>
-    </div>
-  `;
-
+  document.getElementById('vault-detail-title').textContent = entry.id + ' \u2014 ' + entry.title;
+  document.getElementById('vault-detail-body').innerHTML = '<div class="settings-info-block" style="padding: 0;"><p><strong>Vault ID:</strong> ' + entry.id + '</p><p><strong>Title:</strong> ' + escHtml(entry.title) + '</p>' + (entry.serialNumber ? '<p><strong>Serial Number:</strong> ' + escHtml(entry.serialNumber) + '</p>' : '') + (entry.accountRef ? '<p><strong>Account Reference:</strong> ' + escHtml(entry.accountRef) + '</p>' : '') + (entry.preservationId ? '<p><strong>Preservation ID:</strong> ' + escHtml(entry.preservationId) + '</p>' : '') + (entry.reminder ? '<p><strong>Future Reminder:</strong> ' + formatDate(entry.reminder) + '</p>' : '') + (entry.reference ? '<p><strong>Reference:</strong> ' + escHtml(entry.reference) + '</p>' : '') + '<p style="margin-top: 8px; font-size: 11px; color: var(--text-muted);">Created: ' + formatDate(entry.createdAt) + (entry.updatedAt !== entry.createdAt ? ' | Updated: ' + formatDate(entry.updatedAt) : '') + '</p></div>';
   document.getElementById('vault-detail-modal').classList.remove('hidden');
 }
 
@@ -674,7 +357,6 @@ function openVaultForm(editId = null) {
   const modal = document.getElementById('vault-modal');
   const form = document.getElementById('vault-form');
   form.reset();
-
   if (editId) {
     const entry = getVaultEntry(editId);
     if (!entry) return;
@@ -692,55 +374,32 @@ function openVaultForm(editId = null) {
     state.currentVaultId = null;
     document.getElementById('vault-modal-title').textContent = 'New Vault Entry';
     document.getElementById('vault-id').value = '';
-    document.getElementById('vault-id-display').textContent = getNextVaultId();
-    // Don't actually increment counter until save
-    // Reset display to next available
     let counter = parseInt(localStorage.getItem(STORAGE_KEY_VAULT_COUNTER) || '0', 10);
-    document.getElementById('vault-id-display').textContent = `FV-${String(counter + 1).padStart(4, '0')}`;
+    document.getElementById('vault-id-display').textContent = 'FV-' + String(counter + 1).padStart(4, '0');
   }
-
   modal.classList.remove('hidden');
 }
 
 function handleVaultFormSubmit(e) {
   e.preventDefault();
-
   const title = document.getElementById('vault-title').value.trim();
-  if (!title) {
-    showToast('Please enter a title for the vault entry.', 'error');
-    return;
-  }
-
-  const data = {
-    title,
-    serialNumber: document.getElementById('vault-serial').value.trim(),
-    accountRef: document.getElementById('vault-account').value.trim(),
-    preservationId: document.getElementById('vault-preservation').value.trim(),
-    reminder: document.getElementById('vault-reminder').value,
-    reference: document.getElementById('vault-reference').value.trim()
-  };
-
+  if (!title) { showToast('Please enter a title for the vault entry.', 'error'); return; }
+  const data = { title, serialNumber: document.getElementById('vault-serial').value.trim(), accountRef: document.getElementById('vault-account').value.trim(), preservationId: document.getElementById('vault-preservation').value.trim(), reminder: document.getElementById('vault-reminder').value, reference: document.getElementById('vault-reference').value.trim() };
   const editId = document.getElementById('vault-id').value;
-  if (editId) {
-    updateVaultEntry(editId, data);
-    showToast(`Vault entry ${editId} updated.`, 'success');
-  } else {
-    const entry = createVaultEntry(data);
-    showToast(`Vault entry ${entry.id} created.`, 'success');
-  }
-
+  if (editId) { updateVaultEntry(editId, data); showToast('Vault entry ' + editId + ' updated.', 'success'); }
+  else { const entry = createVaultEntry(data); showToast('Vault entry ' + entry.id + ' created.', 'success'); }
   document.getElementById('vault-modal').classList.add('hidden');
   document.getElementById('vault-detail-modal').classList.add('hidden');
   renderVaultList();
 }
 
 function deleteVaultEntryConfirm(id) {
-  if (confirm(`Delete vault entry ${id}? This cannot be undone.`)) {
+  if (confirm('Delete vault entry ' + id + '? This cannot be undone.')) {
     deleteVaultEntry(id);
     document.getElementById('vault-detail-modal').classList.add('hidden');
     document.getElementById('vault-modal').classList.add('hidden');
     renderVaultList();
-    showToast(`Vault entry ${id} deleted.`, 'info');
+    showToast('Vault entry ' + id + ' deleted.', 'info');
     updateSidebarStats();
   }
 }
@@ -750,44 +409,16 @@ function deleteVaultEntryConfirm(id) {
 // ============================================================
 function renderTimeline() {
   const container = document.getElementById('timeline-container');
-
-  // Populate year filter
   const yearSelect = document.getElementById('timeline-year');
   const years = new Set(state.archives.map(a => new Date(a.date || a.createdAt).getFullYear()));
   const currentYear = yearSelect.value;
-  yearSelect.innerHTML = '<option value="all">All Years</option>' +
-    Array.from(years).sort((a, b) => b - a).map(y => `<option value="${y}" ${y.toString() === currentYear ? 'selected' : ''}>${y}</option>`).join('');
-
+  yearSelect.innerHTML = '<option value="all">All Years</option>' + Array.from(years).sort((a, b) => b - a).map(y => '<option value="' + y + '"' + (y.toString() === currentYear ? ' selected' : '') + '>' + y + '</option>').join('');
   let entries = [...state.archives];
-  if (state.timelineYear !== 'all') {
-    entries = entries.filter(a => new Date(a.date || a.createdAt).getFullYear() === parseInt(state.timelineYear));
-  }
-  if (state.timelineCategory !== 'all') {
-    entries = entries.filter(a => a.category === state.timelineCategory);
-  }
-
+  if (state.timelineYear !== 'all') entries = entries.filter(a => new Date(a.date || a.createdAt).getFullYear() === parseInt(state.timelineYear));
+  if (state.timelineCategory !== 'all') entries = entries.filter(a => a.category === state.timelineCategory);
   entries.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
-
-  if (entries.length === 0) {
-    container.innerHTML = '<div class="empty-state">No archives to display on the timeline.</div>';
-    return;
-  }
-
-  container.innerHTML = entries.map((a, i) => `
-    <div class="timeline-item" style="animation-delay: ${i * 0.05}s">
-      <div class="timeline-item-content" onclick="navigateTo('archive-detail', { id: '${a.id}' })">
-        <div class="timeline-item-header">
-          <span class="timeline-item-title">${escHtml(a.title)}</span>
-          <span class="timeline-item-date">${formatDate(a.date || a.createdAt)}</span>
-        </div>
-        <div class="timeline-item-meta">
-          <span class="timeline-item-category">${escHtml(a.category)}</span>
-          <span class="timeline-item-id">${a.id}</span>
-          <span class="timeline-item-id">${'★'.repeat(a.importance || 3)}</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  if (entries.length === 0) { container.innerHTML = '<div class="empty-state">No archives to display on the timeline.</div>'; return; }
+  container.innerHTML = entries.map((a, i) => '<div class="timeline-item" style="animation-delay: ' + (i * 0.05) + 's"><div class="timeline-item-content" onclick="navigateTo(\'archive-detail\', { id: \'' + a.id + '\' })"><div class="timeline-item-header"><span class="timeline-item-title">' + escHtml(a.title) + '</span><span class="timeline-item-date">' + formatDate(a.date || a.createdAt) + '</span></div><div class="timeline-item-meta"><span class="timeline-item-category">' + escHtml(a.category) + '</span><span class="timeline-item-id">' + a.id + '</span><span class="timeline-item-id">' + '\u2605'.repeat(a.importance || 3) + '</span></div></div></div>').join('');
 }
 
 // ============================================================
@@ -796,36 +427,20 @@ function renderTimeline() {
 function renderSettings() {
   document.getElementById('settings-total').textContent = getArchivesCount();
   document.getElementById('settings-vault').textContent = getVaultCount();
-
-  // Calculate storage used
   let totalSize = 0;
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     const value = localStorage.getItem(key);
-    if (key.startsWith('chai_archive')) {
-      totalSize += (key.length + value.length) * 2; // UTF-16
-    }
+    if (key.startsWith('chai_archive')) totalSize += (key.length + value.length) * 2;
   }
-  const sizeKB = (totalSize / 1024).toFixed(1);
-  document.getElementById('settings-storage').textContent = `${sizeKB} KB`;
+  document.getElementById('settings-storage').textContent = (totalSize / 1024).toFixed(1) + ' KB';
 }
 
 function exportAllJSON() {
-  const data = {
-    version: '1.0',
-    exportedAt: new Date().toISOString(),
-    archives: state.archives,
-    vaultEntries: state.vaultEntries,
-    counter: localStorage.getItem(STORAGE_KEY_COUNTER) || '0',
-    vaultCounter: localStorage.getItem(STORAGE_KEY_VAULT_COUNTER) || '0'
-  };
-
+  const data = { version: '1.0', exportedAt: new Date().toISOString(), archives: state.archives, vaultEntries: state.vaultEntries, counter: localStorage.getItem(STORAGE_KEY_COUNTER) || '0', vaultCounter: localStorage.getItem(STORAGE_KEY_VAULT_COUNTER) || '0' };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `chai-archive-backup-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
+  const a = document.createElement('a'); a.href = url; a.download = 'chai-archive-backup-' + new Date().toISOString().split('T')[0] + '.json'; a.click();
   URL.revokeObjectURL(url);
   showToast('Archive backup exported successfully.', 'success');
 }
@@ -835,54 +450,40 @@ function importJSON(file) {
   reader.onload = function(e) {
     try {
       const data = JSON.parse(e.target.result);
-      if (!data.archives || !Array.isArray(data.archives)) {
-        showToast('Invalid backup file format.', 'error');
-        return;
-      }
-
+      if (!data.archives || !Array.isArray(data.archives)) { showToast('Invalid backup file format.', 'error'); return; }
       const count = data.archives.length;
       state.archives = data.archives;
-      if (data.vaultEntries) {
-        state.vaultEntries = data.vaultEntries;
-      }
+      if (data.vaultEntries) state.vaultEntries = data.vaultEntries;
       if (data.counter) localStorage.setItem(STORAGE_KEY_COUNTER, data.counter);
       if (data.vaultCounter) localStorage.setItem(STORAGE_KEY_VAULT_COUNTER, data.vaultCounter);
-
-      saveArchives();
-      saveVault();
-      showToast(`Imported ${count} archive(s) and ${(data.vaultEntries || []).length} vault entr(ies).`, 'success');
+      saveArchives(); saveVault();
+      showToast('Imported ' + count + ' archive(s) and ' + (data.vaultEntries || []).length + ' vault entr(ies).', 'success');
       navigateTo('dashboard');
-    } catch (err) {
-      showToast('Failed to import: Invalid JSON file.', 'error');
-    }
+    } catch (err) { showToast('Failed to import: Invalid JSON file.', 'error'); }
   };
   reader.readAsText(file);
 }
 
 function clearAllData() {
-  if (confirm('⚠️ This will permanently delete ALL archives and vault entries. Are you sure?')) {
+  if (confirm('\u26A0\uFE0F This will permanently delete ALL archives and vault entries. Are you sure?')) {
     if (confirm('This action CANNOT be undone. Proceed?')) {
-      state.archives = [];
-      state.vaultEntries = [];
-      localStorage.removeItem(STORAGE_KEY_ARCHIVES);
-      localStorage.removeItem(STORAGE_KEY_VAULT);
-      localStorage.removeItem(STORAGE_KEY_COUNTER);
-      localStorage.removeItem(STORAGE_KEY_VAULT_COUNTER);
-      showToast('All data cleared.', 'info');
-      navigateTo('dashboard');
+      state.archives = []; state.vaultEntries = [];
+      localStorage.removeItem(STORAGE_KEY_ARCHIVES); localStorage.removeItem(STORAGE_KEY_VAULT);
+      localStorage.removeItem(STORAGE_KEY_COUNTER); localStorage.removeItem(STORAGE_KEY_VAULT_COUNTER);
+      showToast('All data cleared.', 'info'); navigateTo('dashboard');
     }
   }
 }
 
 // ============================================================
-// EXPORT CARD BUILDER (Premium Museum Artifact Card)
-// Fixed 1000x600 landscape card for PNG/PDF export
+// EXPORT CARD BUILDER — Premium Museum Artifact Card
+// Business card style: 1000x600 landscape, parchment, ribbon, seal
 // ============================================================
 function buildExportCard(archive) {
   if (!archive) return null;
 
-  const stars = '★'.repeat(archive.importance || 3);
-  const starsEmpty = '☆'.repeat(5 - (archive.importance || 3));
+  const stars = '\u2605'.repeat(archive.importance || 3);
+  const starsEmpty = '\u2606'.repeat(5 - (archive.importance || 3));
   const moodObj = archive.mood ? MOODS.find(m => m.value === archive.mood) : null;
   const tags = (archive.tags || []).slice(0, 4);
   const tagOverflow = (archive.tags || []).length > 4;
@@ -893,110 +494,98 @@ function buildExportCard(archive) {
     const qrContainer = document.createElement('div');
     qrContainer.style.cssText = 'position:absolute;left:-9999px;top:0;width:80px;height:80px;';
     document.body.appendChild(qrContainer);
-
-    const qrData = JSON.stringify({
-      id: archive.id,
-      title: archive.title,
-      category: archive.category,
-      date: archive.date,
-      preserved: archive.createdAt
-    });
-
+    const qrData = JSON.stringify({ id: archive.id, title: archive.title, category: archive.category, date: archive.date, preserved: archive.createdAt });
     if (typeof QRCode !== 'undefined') {
-      const qr = new QRCode(qrContainer, {
-        text: qrData,
-        width: 80,
-        height: 80,
-        colorDark: '#2c1810',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
-
+      const qr = new QRCode(qrContainer, { text: qrData, width: 80, height: 80, colorDark: '#2c1810', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
       const qrCanvas = qrContainer.querySelector('canvas');
-      if (qrCanvas) {
-        qrDataUrl = qrCanvas.toDataURL('image/png');
-      } else {
-        const qrImg = qrContainer.querySelector('img');
-        if (qrImg) qrDataUrl = qrImg.src;
-      }
+      if (qrCanvas) { qrDataUrl = qrCanvas.toDataURL('image/png'); }
+      else { const qrImg = qrContainer.querySelector('img'); if (qrImg) qrDataUrl = qrImg.src; }
     }
-
     document.body.removeChild(qrContainer);
-  } catch (e) {
-    // QR generation failed silently
-  }
+  } catch (e) { /* QR generation failed silently */ }
 
   const container = document.createElement('div');
   container.className = 'export-card-container';
 
-  container.innerHTML = `
-    <div class="export-card">
-      <div class="export-card-inner">
+  // Escape function for safe HTML in template
+  function s(str) { return escHtml(str || ''); }
 
-        <!-- TOP: Branding + ID + Stamp -->
-        <div class="export-card-top">
-          <div class="export-card-brand">
-            <div class="export-card-logo-icon">📜</div>
-            <div class="export-card-brand-text">
-              <div class="export-card-brand-title">Chai Archive</div>
-              <div class="export-card-brand-sub">Logbook · Museum Collection</div>
-            </div>
-          </div>
-          <div class="export-card-id-section">
-            <div class="export-card-id">${escHtml(archive.id)}</div>
-            <span class="export-card-category">${escHtml(archive.category)}</span>
-            <span class="export-card-date">${formatDate(archive.date || archive.createdAt)}</span>
-          </div>
-        </div>
+  container.innerHTML = '<div class="export-card">' +
+    '<div class="export-card-leaf-tl">\uD83C\uDF43</div>' +
+    '<div class="export-card-leaf-br">\uD83C\uDF43</div>' +
+    '<div class="export-card-inner">' +
 
-        <!-- PRESERVED STAMP -->
-        <div class="export-card-stamp">
-          <div class="export-card-stamp-inner">PRESERVED<br/>&bull; ${new Date(archive.createdAt).getFullYear()} &bull;</div>
-        </div>
+    // TOP SECTION: Ribbon + ID + Seal + Info
+    '<div class="export-card-top">' +
+      '<div class="export-card-brand">' +
+        '<div class="export-card-ribbon">' +
+          '<div class="export-card-ribbon-icon">\uD83D\uDCDC</div>' +
+          '<div class="export-card-ribbon-text">CHAI<br/>ARCHIVE</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="export-card-id-section">' +
+        '<div class="export-card-id">' + s(archive.id) + '</div>' +
+        '<div class="export-card-id-label">Archive ID</div>' +
+      '</div>' +
+      '<div class="export-card-seal">' +
+        '<div class="export-card-seal-text">PRESERVED</div>' +
+        '<div class="export-card-seal-main">CHAI</div>' +
+        '<div class="export-card-seal-text">ARCHIVE</div>' +
+      '</div>' +
+      '<div class="export-card-right-info">' +
+        '<div class="export-card-info-row"><span class="export-card-info-icon">\uD83D\uDCC5</span><span>' + formatDate(archive.date || archive.createdAt) + '</span></div>' +
+        '<div class="export-card-info-row"><span class="export-card-info-icon">\uD83D\uDCC1</span><span>' + s(archive.category) + '</span></div>' +
+        '<div class="export-card-preserved-badge">PRESERVED</div>' +
+      '</div>' +
+    '</div>' +
 
-        <!-- DIVIDER -->
-        <div class="export-card-divider"></div>
+    '<div class="export-card-divider"></div>' +
 
-        <!-- CENTER: Title, Description, Meta -->
-        <div class="export-card-content">
-          <div class="export-card-title">${escHtml(archive.title)}</div>
-          <div class="export-card-description">${escHtml(archive.description)}</div>
+    // CONTENT SECTION: Two columns
+    '<div class="export-card-content">' +
+      '<div class="export-card-content-left">' +
+        '<div class="export-card-section">' +
+          '<div class="export-card-section-label"><span class="export-card-section-icon">\uD83C\uDF3F</span>TITLE</div>' +
+          '<div class="export-card-title">' + s(archive.title) + '</div>' +
+        '</div>' +
+        '<div class="export-card-section">' +
+          '<div class="export-card-section-label"><span class="export-card-section-icon">\uD83D\uDCC4</span>DESCRIPTION</div>' +
+          '<div class="export-card-description">' + s(archive.description) + '</div>' +
+        '</div>' +
+        (archive.futureMessage ? '<div class="export-card-section"><div class="export-card-section-label"><span class="export-card-section-icon">\u2709\uFE0F</span>FUTURE MESSAGE</div><div class="export-card-description" style="font-style:italic;">' + s(archive.futureMessage) + '</div></div>' : '') +
+      '</div>' +
+      '<div class="export-card-content-right">' +
+        '<div class="export-card-section">' +
+          '<div class="export-card-section-label"><span class="export-card-section-icon">\uD83C\uDFAD</span>MOOD</div>' +
+          (moodObj ? '<div class="export-card-mood"><span class="export-card-mood-emoji">' + moodObj.emoji + '</span> ' + moodObj.label + '</div>' : '<div class="export-card-mood" style="opacity:0.3">\u2014</div>') +
+        '</div>' +
+        '<div class="export-card-section">' +
+          '<div class="export-card-section-label"><span class="export-card-section-icon">\u2B50</span>IMPORTANCE</div>' +
+          '<div class="export-card-stars"><span class="export-card-stars-filled">' + stars + '</span><span class="export-card-stars-empty">' + starsEmpty + '</span></div>' +
+        '</div>' +
+        '<div class="export-card-section">' +
+          '<div class="export-card-section-label"><span class="export-card-section-icon">\uD83C\uDFF7\uFE0F</span>TAGS</div>' +
+          (tags.length > 0 ? '<div class="export-card-tags">' + tags.map(function(t) { return '<span class="export-card-tag">' + s(t) + '</span>'; }).join('') + (tagOverflow ? '<span class="export-card-tag">+' + (archive.tags.length - 4) + '</span>' : '') + '</div>' : '<div style="font-size:11px;color:#8b7355;opacity:0.4">No tags</div>') +
+        '</div>' +
+      '</div>' +
+    '</div>' +
 
-          <div class="export-card-meta-row">
-            ${moodObj ? `<span class="export-card-mood"><span class="export-card-mood-emoji">${moodObj.emoji}</span> ${moodObj.label}</span>` : ''}
-            <span class="export-card-stars">
-              <span class="export-card-stars-filled">${stars}</span>
-              <span class="export-card-stars-empty">${starsEmpty}</span>
-            </span>
-            ${tags.length > 0 ? `
-            <span class="export-card-tags">
-              ${tags.map(t => `<span class="export-card-tag">${escHtml(t)}</span>`).join('')}
-              ${tagOverflow ? `<span class="export-card-tag">+${archive.tags.length - 4}</span>` : ''}
-            </span>` : ''}
-          </div>
+    '<div class="export-card-divider"></div>' +
 
-          ${archive.notes ? `<div class="export-card-notes">" ${escHtml(archive.notes)} "</div>` : ''}
-        </div>
+    // BOTTOM SECTION: QR + Motto + Branding
+    '<div class="export-card-bottom">' +
+      '<div class="export-card-qr">' +
+        (qrDataUrl ? '<img src="' + qrDataUrl + '" alt="QR" width="64" height="64" />' : '<span style="font-size:24px;opacity:0.3">&#x25A3;</span>') +
+      '</div>' +
+      '<div class="export-card-slogan-area">' +
+        '<div class="export-card-motto"><span class="export-card-motto-leaf">\uD83C\uDF3F</span> Preserve Today, Inspire Tomorrow <span class="export-card-motto-leaf">\uD83C\uDF3F</span></div>' +
+        '<div class="export-card-branding-line"><span>CHAI ARCHIVE LOGBOOK</span><span class="export-card-version">v1.0</span></div>' +
+      '</div>' +
+    '</div>' +
 
-        <!-- DIVIDER -->
-        <div class="export-card-divider"></div>
-
-        <!-- BOTTOM: QR + Slogan = Branding -->
-        <div class="export-card-bottom">
-          <div class="export-card-qr">
-            ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR" width="72" height="72" />` : `<span style="font-size:24px;opacity:0.3;">&#x25A3;</span>`}
-          </div>
-          <div class="export-card-slogan-area">
-            <div class="export-card-motto">" Preserve Today, Inspire Tomorrow "</div>
-            <div class="export-card-branding-line">${escHtml(archive.id)} &bull; Chai Archive Logbook &bull; v1.0</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Background watermark -->
-      <div class="export-card-watermark">${escHtml(archive.id)}</div>
-    </div>
-  `;
+    '</div>' +
+    '<div class="export-card-watermark">' + s(archive.id) + '</div>' +
+  '</div>';
 
   return container;
 }
@@ -1006,139 +595,62 @@ function buildExportCard(archive) {
 // ============================================================
 async function exportPNG() {
   const archive = getArchive(state.currentArchiveId);
-  if (!archive) {
-    showToast('No archive to export.', 'error');
-    return;
-  }
-
+  if (!archive) { showToast('No archive to export.', 'error'); return; }
   showToast('Generating museum card PNG...', 'info');
-
   const exportCard = buildExportCard(archive);
-  if (!exportCard) {
-    showToast('Failed to build export card.', 'error');
-    return;
-  }
-
+  if (!exportCard) { showToast('Failed to build export card.', 'error'); return; }
   document.body.appendChild(exportCard);
-
   try {
     const cardEl = exportCard.querySelector('.export-card');
-
-    const canvas = await html2canvas(cardEl, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#f6f1e7',
-      logging: false,
-      allowTaint: false,
-      width: 1000,
-      height: 600
-    });
-
+    const canvas = await html2canvas(cardEl, { scale: 2, useCORS: true, backgroundColor: '#f6edd9', logging: false, allowTaint: false, width: 1000, height: 600 });
     const link = document.createElement('a');
-    link.download = `${archive.id}.png`;
+    link.download = archive.id + '.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
-    showToast(`Museum card saved: ${link.download}`, 'success');
+    showToast('Museum card saved: ' + link.download, 'success');
   } catch (err) {
     console.error('PNG export error:', err);
     showToast('Failed to generate PNG. Please try again.', 'error');
-  } finally {
-    document.body.removeChild(exportCard);
-  }
+  } finally { document.body.removeChild(exportCard); }
 }
 
 // ============================================================
-// PDF EXPORT — renders the archive card via html2canvas,
-// then embeds the captured image into a card-sized PDF page.
-// No A4 page, no margins, no blank areas.
+// PDF EXPORT — card-sized PDF via html2canvas
 // ============================================================
 async function exportPDF() {
   const archive = getArchive(state.currentArchiveId);
-  if (!archive) {
-    showToast('No archive to export.', 'error');
-    return;
-  }
-
+  if (!archive) { showToast('No archive to export.', 'error'); return; }
   showToast('Generating museum card PDF...', 'info');
-
   const exportCard = buildExportCard(archive);
-  if (!exportCard) {
-    showToast('Failed to build export card.', 'error');
-    return;
-  }
-
+  if (!exportCard) { showToast('Failed to build export card.', 'error'); return; }
   document.body.appendChild(exportCard);
-
   const CARD_W = 1000;
   const CARD_H = 600;
-
   try {
     const cardEl = exportCard.querySelector('.export-card');
-
-    // 1. Render the card to a high-res canvas via html2canvas
-    const canvas = await html2canvas(cardEl, {
-      scale: 3,
-      useCORS: true,
-      backgroundColor: '#f6f1e7',
-      logging: false,
-      allowTaint: false,
-      width: CARD_W,
-      height: CARD_H
-    });
-
-    // 2. Convert canvas to PNG data URL
+    const canvas = await html2canvas(cardEl, { scale: 3, useCORS: true, backgroundColor: '#f6edd9', logging: false, allowTaint: false, width: CARD_W, height: CARD_H });
     const imgData = canvas.toDataURL('image/png');
-
-    // 3. Create a jsPDF page sized exactly to the card (px units, landscape)
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [CARD_W, CARD_H]
-    });
-
-    // 4. Place the card image at origin, filling the entire page
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [CARD_W, CARD_H] });
     pdf.addImage(imgData, 'PNG', 0, 0, CARD_W, CARD_H);
-
-    // 5. Save with the archive ID as filename
-    pdf.save(`${archive.id}.pdf`);
-
-    showToast(`Museum card PDF saved: ${archive.id}.pdf`, 'success');
+    pdf.save(archive.id + '.pdf');
+    showToast('Museum card PDF saved: ' + archive.id + '.pdf', 'success');
   } catch (err) {
     console.error('PDF export error:', err);
     showToast('Failed to generate PDF. Please try again.', 'error');
-  } finally {
-    document.body.removeChild(exportCard);
-  }
+  } finally { document.body.removeChild(exportCard); }
 }
 
 function showQR(id) {
   const archive = getArchive(id);
   if (!archive) return;
-
   document.getElementById('qr-modal').classList.remove('hidden');
   document.getElementById('qr-label').textContent = archive.id;
-
   const qrContainer = document.getElementById('qr-code');
   qrContainer.innerHTML = '';
-
-  const qrData = JSON.stringify({
-    id: archive.id,
-    title: archive.title,
-    category: archive.category,
-    date: archive.date,
-    preserved: archive.createdAt
-  }, null, 2);
-
+  const qrData = JSON.stringify({ id: archive.id, title: archive.title, category: archive.category, date: archive.date, preserved: archive.createdAt }, null, 2);
   if (typeof QRCode !== 'undefined') {
-    new QRCode(qrContainer, {
-      text: qrData,
-      width: 180,
-      height: 180,
-      colorDark: '#2c1810',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
-    });
+    new QRCode(qrContainer, { text: qrData, width: 180, height: 180, colorDark: '#2c1810', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
   } else {
     qrContainer.innerHTML = '<div style="padding:20px;color:var(--text-muted)">QR library not loaded.</div>';
   }
@@ -1149,59 +661,46 @@ function downloadQR() {
   if (canvas) {
     const link = document.createElement('a');
     const label = document.getElementById('qr-label').textContent;
-    link.download = `${label}-qr.png`;
+    link.download = label + '-qr.png';
     link.href = canvas.toDataURL('image/png');
     link.click();
     showToast('QR code downloaded.', 'success');
-  } else {
-    showToast('No QR code to download.', 'error');
-  }
+  } else { showToast('No QR code to download.', 'error'); }
 }
 
 function exportSingleJSON(id) {
   const archive = getArchive(id);
   if (!archive) return;
-
   const blob = new Blob([JSON.stringify(archive, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${archive.id}.json`;
-  a.click();
+  const a = document.createElement('a'); a.href = url; a.download = archive.id + '.json'; a.click();
   URL.revokeObjectURL(url);
-  showToast(`JSON exported: ${archive.id}.json`, 'success');
+  showToast('JSON exported: ' + archive.id + '.json', 'success');
 }
 
 // ============================================================
 // TOAST NOTIFICATIONS
 // ============================================================
-function showToast(message, type = 'info') {
+function showToast(message, type) {
+  type = type || 'info';
   const container = document.getElementById('toast-container');
   const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
+  toast.className = 'toast toast-' + type;
   toast.textContent = message;
   container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add('toast-out');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  setTimeout(function() { toast.classList.add('toast-out'); setTimeout(function() { toast.remove(); }, 300); }, 3000);
 }
 
 // ============================================================
 // UTILITIES
 // ============================================================
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return '\u2014';
   try {
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric'
-    });
-  } catch {
-    return dateStr;
-  }
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch (e) { return dateStr; }
 }
 
 function escHtml(str) {
@@ -1213,7 +712,7 @@ function escHtml(str) {
 
 function updateSidebarStats() {
   const total = getArchivesCount();
-  document.getElementById('sidebar-total').textContent = `${total} archive${total !== 1 ? 's' : ''}`;
+  document.getElementById('sidebar-total').textContent = total + ' archive' + (total !== 1 ? 's' : '');
 }
 
 function toggleDarkMode(enable) {
@@ -1236,8 +735,7 @@ let pendingDeleteId = null;
 function showDeleteModal(archiveId) {
   pendingDeleteId = archiveId;
   const archive = getArchive(archiveId);
-  document.getElementById('delete-modal-text').textContent =
-    `Are you sure you want to delete ${archive ? archive.id : 'this archive'}? This action cannot be undone.`;
+  document.getElementById('delete-modal-text').textContent = 'Are you sure you want to delete ' + (archive ? archive.id : 'this archive') + '? This action cannot be undone.';
   document.getElementById('delete-modal').classList.remove('hidden');
 }
 
@@ -1246,7 +744,7 @@ function confirmDelete() {
     const id = pendingDeleteId;
     deleteArchive(id);
     document.getElementById('delete-modal').classList.add('hidden');
-    showToast(`Archive ${id} deleted.`, 'info');
+    showToast('Archive ' + id + ' deleted.', 'info');
     pendingDeleteId = null;
     navigateTo('archives');
     updateSidebarStats();
@@ -1257,195 +755,108 @@ function confirmDelete() {
 // EVENT BINDING
 // ============================================================
 function bindEvents() {
-  // --- Navigation ---
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
+  document.querySelectorAll('.nav-item').forEach(function(item) {
+    item.addEventListener('click', function() {
       const page = item.dataset.page;
-      if (page === 'archive-form') {
-        navigateTo(page, {});
-      } else {
-        navigateTo(page);
-      }
+      if (page === 'archive-form') navigateTo(page, {});
+      else navigateTo(page);
     });
   });
 
-  // --- Form Submit ---
   document.getElementById('archive-form').addEventListener('submit', handleFormSubmit);
-  document.getElementById('form-cancel').addEventListener('click', () => {
-    if (state.editingArchiveId) {
-      navigateTo('archive-detail', { id: state.editingArchiveId });
-    } else {
-      navigateTo('archives');
-    }
+  document.getElementById('form-cancel').addEventListener('click', function() {
+    if (state.editingArchiveId) navigateTo('archive-detail', { id: state.editingArchiveId });
+    else navigateTo('archives');
   });
 
-  // --- Star Rating ---
-  document.querySelectorAll('.star').forEach(star => {
-    star.addEventListener('click', () => {
+  // Star Rating
+  document.querySelectorAll('.star').forEach(function(star) {
+    star.addEventListener('click', function() {
       const value = parseInt(star.dataset.value);
       document.getElementById('field-importance').value = value;
-      document.querySelectorAll('.star').forEach(s => {
+      document.querySelectorAll('.star').forEach(function(s) {
         const val = parseInt(s.dataset.value);
         s.classList.toggle('active', val <= value);
-        s.textContent = val <= value ? '★' : '☆';
+        s.textContent = val <= value ? '\u2605' : '\u2606';
       });
     });
-
-    star.addEventListener('mouseenter', () => {
+    star.addEventListener('mouseenter', function() {
       const value = parseInt(star.dataset.value);
-      document.querySelectorAll('.star').forEach(s => {
-        const val = parseInt(s.dataset.value);
-        if (val <= value) {
-          s.style.color = 'var(--gold)';
-        } else {
-          s.style.color = 'var(--border-light)';
-        }
+      document.querySelectorAll('.star').forEach(function(s) {
+        s.style.color = parseInt(s.dataset.value) <= value ? 'var(--gold)' : 'var(--border-light)';
       });
     });
-
-    star.addEventListener('mouseleave', () => {
+    star.addEventListener('mouseleave', function() {
       const currentValue = parseInt(document.getElementById('field-importance').value);
-      document.querySelectorAll('.star').forEach(s => {
-        const val = parseInt(s.dataset.value);
-        s.style.color = val <= currentValue ? 'var(--gold)' : 'var(--border-light)';
+      document.querySelectorAll('.star').forEach(function(s) {
+        s.style.color = parseInt(s.dataset.value) <= currentValue ? 'var(--gold)' : 'var(--border-light)';
       });
     });
   });
 
-  // --- Search & Filters (Archives) ---
+  // Search & Filters
   const searchInput = document.getElementById('search-input');
   let searchTimeout;
-  searchInput.addEventListener('input', () => {
+  searchInput.addEventListener('input', function() {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      state.searchQuery = searchInput.value;
-      renderArchivesList();
-    }, 250);
+    searchTimeout = setTimeout(function() { state.searchQuery = searchInput.value; renderArchivesList(); }, 250);
   });
+  document.getElementById('filter-category').addEventListener('change', function(e) { state.filterCategory = e.target.value; renderArchivesList(); });
+  document.getElementById('filter-importance').addEventListener('change', function(e) { state.filterImportance = e.target.value; renderArchivesList(); });
+  document.getElementById('filter-sort').addEventListener('change', function(e) { state.filterSort = e.target.value; renderArchivesList(); });
 
-  document.getElementById('filter-category').addEventListener('change', e => {
-    state.filterCategory = e.target.value;
-    renderArchivesList();
-  });
+  // Detail Actions
+  document.getElementById('detail-back').addEventListener('click', function() { navigateTo('archives'); });
+  document.getElementById('detail-edit').addEventListener('click', function() { navigateTo('archive-form', { editId: state.currentArchiveId }); });
+  document.getElementById('detail-delete').addEventListener('click', function() { showDeleteModal(state.currentArchiveId); });
 
-  document.getElementById('filter-importance').addEventListener('change', e => {
-    state.filterImportance = e.target.value;
-    renderArchivesList();
-  });
-
-  document.getElementById('filter-sort').addEventListener('change', e => {
-    state.filterSort = e.target.value;
-    renderArchivesList();
-  });
-
-  // --- Detail Actions ---
-  document.getElementById('detail-back').addEventListener('click', () => navigateTo('archives'));
-  document.getElementById('detail-edit').addEventListener('click', () => {
-    navigateTo('archive-form', { editId: state.currentArchiveId });
-  });
-  document.getElementById('detail-delete').addEventListener('click', () => {
-    showDeleteModal(state.currentArchiveId);
-  });
-
-  // --- Export Actions ---
+  // Export Actions
   document.getElementById('export-png').addEventListener('click', exportPNG);
   document.getElementById('export-pdf').addEventListener('click', exportPDF);
-  document.getElementById('export-qr').addEventListener('click', () => {
-    if (state.currentArchiveId) showQR(state.currentArchiveId);
-  });
-  document.getElementById('export-json-single').addEventListener('click', () => {
-    if (state.currentArchiveId) exportSingleJSON(state.currentArchiveId);
-  });
+  document.getElementById('export-qr').addEventListener('click', function() { if (state.currentArchiveId) showQR(state.currentArchiveId); });
+  document.getElementById('export-json-single').addEventListener('click', function() { if (state.currentArchiveId) exportSingleJSON(state.currentArchiveId); });
 
-  // --- QR Modal ---
-  document.getElementById('qr-close').addEventListener('click', () => {
-    document.getElementById('qr-modal').classList.add('hidden');
-  });
+  // QR Modal
+  document.getElementById('qr-close').addEventListener('click', function() { document.getElementById('qr-modal').classList.add('hidden'); });
   document.getElementById('qr-download').addEventListener('click', downloadQR);
 
-  // --- Delete Modal ---
-  document.getElementById('delete-modal-close').addEventListener('click', () => {
-    document.getElementById('delete-modal').classList.add('hidden');
-    pendingDeleteId = null;
-  });
-  document.getElementById('delete-modal-cancel').addEventListener('click', () => {
-    document.getElementById('delete-modal').classList.add('hidden');
-    pendingDeleteId = null;
-  });
+  // Delete Modal
+  document.getElementById('delete-modal-close').addEventListener('click', function() { document.getElementById('delete-modal').classList.add('hidden'); pendingDeleteId = null; });
+  document.getElementById('delete-modal-cancel').addEventListener('click', function() { document.getElementById('delete-modal').classList.add('hidden'); pendingDeleteId = null; });
   document.getElementById('delete-modal-confirm').addEventListener('click', confirmDelete);
 
-  // --- Vault ---
-  document.getElementById('vault-new-entry').addEventListener('click', () => openVaultForm());
-  document.getElementById('vault-search').addEventListener('input', e => {
-    state.vaultSearch = e.target.value;
-    renderVaultList();
-  });
-
-  // Vault Modal
-  document.getElementById('vault-modal-close').addEventListener('click', () => {
-    document.getElementById('vault-modal').classList.add('hidden');
-  });
-  document.getElementById('vault-form-cancel').addEventListener('click', () => {
-    document.getElementById('vault-modal').classList.add('hidden');
-  });
+  // Vault
+  document.getElementById('vault-new-entry').addEventListener('click', function() { openVaultForm(); });
+  document.getElementById('vault-search').addEventListener('input', function(e) { state.vaultSearch = e.target.value; renderVaultList(); });
+  document.getElementById('vault-modal-close').addEventListener('click', function() { document.getElementById('vault-modal').classList.add('hidden'); });
+  document.getElementById('vault-form-cancel').addEventListener('click', function() { document.getElementById('vault-modal').classList.add('hidden'); });
   document.getElementById('vault-form').addEventListener('submit', handleVaultFormSubmit);
+  document.getElementById('vault-detail-close').addEventListener('click', function() { document.getElementById('vault-detail-modal').classList.add('hidden'); });
+  document.getElementById('vault-detail-edit').addEventListener('click', function() { document.getElementById('vault-detail-modal').classList.add('hidden'); openVaultForm(state.currentVaultId); });
+  document.getElementById('vault-detail-delete').addEventListener('click', function() { document.getElementById('vault-detail-modal').classList.add('hidden'); deleteVaultEntryConfirm(state.currentVaultId); });
 
-  // Vault Detail Modal
-  document.getElementById('vault-detail-close').addEventListener('click', () => {
-    document.getElementById('vault-detail-modal').classList.add('hidden');
-  });
-  document.getElementById('vault-detail-edit').addEventListener('click', () => {
-    document.getElementById('vault-detail-modal').classList.add('hidden');
-    openVaultForm(state.currentVaultId);
-  });
-  document.getElementById('vault-detail-delete').addEventListener('click', () => {
-    document.getElementById('vault-detail-modal').classList.add('hidden');
-    deleteVaultEntryConfirm(state.currentVaultId);
-  });
+  // Timeline
+  document.getElementById('timeline-year').addEventListener('change', function(e) { state.timelineYear = e.target.value; renderTimeline(); });
+  document.getElementById('timeline-category').addEventListener('change', function(e) { state.timelineCategory = e.target.value; renderTimeline(); });
 
-  // --- Timeline ---
-  document.getElementById('timeline-year').addEventListener('change', e => {
-    state.timelineYear = e.target.value;
-    renderTimeline();
-  });
-  document.getElementById('timeline-category').addEventListener('change', e => {
-    state.timelineCategory = e.target.value;
-    renderTimeline();
-  });
-
-  // --- Settings ---
-  document.getElementById('dark-mode-toggle').addEventListener('change', e => {
-    toggleDarkMode(e.target.checked);
-  });
-
-  document.getElementById('print-mode-toggle').addEventListener('change', e => {
-    togglePrintMode(e.target.checked);
-  });
-
+  // Settings
+  document.getElementById('dark-mode-toggle').addEventListener('change', function(e) { toggleDarkMode(e.target.checked); });
+  document.getElementById('print-mode-toggle').addEventListener('change', function(e) { togglePrintMode(e.target.checked); });
   document.getElementById('settings-export-json').addEventListener('click', exportAllJSON);
-  document.getElementById('settings-import-json').addEventListener('change', e => {
-    if (e.target.files.length > 0) {
-      importJSON(e.target.files[0]);
-      e.target.value = '';
-    }
+  document.getElementById('settings-import-json').addEventListener('change', function(e) {
+    if (e.target.files.length > 0) { importJSON(e.target.files[0]); e.target.value = ''; }
   });
   document.getElementById('settings-clear-all').addEventListener('click', clearAllData);
 
-  // --- Close modals on overlay click ---
-  document.querySelectorAll('.modal-overlay, .qr-modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-      if (e.target === this) {
-        this.classList.add('hidden');
-      }
-    });
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay, .qr-modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) { if (e.target === this) this.classList.add('hidden'); });
   });
 
   // Keyboard: Escape to close modals
-  document.addEventListener('keydown', e => {
+  document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-      document.querySelectorAll('.modal-overlay:not(.hidden), .qr-modal-overlay:not(.hidden)').forEach(el => {
-        el.classList.add('hidden');
-      });
+      document.querySelectorAll('.modal-overlay:not(.hidden), .qr-modal-overlay:not(.hidden)').forEach(function(el) { el.classList.add('hidden'); });
     }
   });
 }
@@ -1455,24 +866,13 @@ function bindEvents() {
 // ============================================================
 function init() {
   loadData();
-
-  // Apply dark mode
-  if (state.isDarkMode) {
-    document.documentElement.classList.add('dark');
-    document.getElementById('dark-mode-toggle').checked = true;
-  }
-
-  if (state.isPrintMode) {
-    document.body.classList.add('print-mode');
-    document.getElementById('print-mode-toggle').checked = true;
-  }
-
+  if (state.isDarkMode) { document.documentElement.classList.add('dark'); document.getElementById('dark-mode-toggle').checked = true; }
+  if (state.isPrintMode) { document.body.classList.add('print-mode'); document.getElementById('print-mode-toggle').checked = true; }
   bindEvents();
   navigateTo('dashboard');
   updateSidebarStats();
 }
 
-// Start the application when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
