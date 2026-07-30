@@ -875,71 +875,242 @@ function clearAllData() {
 }
 
 // ============================================================
+// EXPORT CARD BUILDER (Premium Museum Artifact Card)
+// Fixed 1000×600 landscape card for PNG/PDF export
+// ============================================================
+function buildExportCard(archive) {
+  if (!archive) return null;
+
+  const stars = '★'.repeat(archive.importance || 3);
+  const starsEmpty = '☆'.repeat(5 - (archive.importance || 3));
+  const moodObj = archive.mood ? MOODS.find(m => m.value === archive.mood) : null;
+  const tags = (archive.tags || []).slice(0, 4);
+  const tagOverflow = (archive.tags || []).length > 4;
+
+  // Generate QR code data URL
+  let qrDataUrl = '';
+  try {
+    const qrContainer = document.createElement('div');
+    qrContainer.style.cssText = 'position:absolute;left:-9999px;top:0;width:80px;height:80px;';
+    document.body.appendChild(qrContainer);
+
+    const qrData = JSON.stringify({
+      id: archive.id,
+      title: archive.title,
+      category: archive.category,
+      date: archive.date,
+      preserved: archive.createdAt
+    });
+
+    if (typeof QRCode !== 'undefined') {
+      const qr = new QRCode(qrContainer, {
+        text: qrData,
+        width: 80,
+        height: 80,
+        colorDark: '#2c1810',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      const qrCanvas = qrContainer.querySelector('canvas');
+      if (qrCanvas) {
+        qrDataUrl = qrCanvas.toDataURL('image/png');
+      } else {
+        const qrImg = qrContainer.querySelector('img');
+        if (qrImg) qrDataUrl = qrImg.src;
+      }
+    }
+
+    document.body.removeChild(qrContainer);
+  } catch (e) {
+    // QR generation failed silently
+  }
+
+  const container = document.createElement('div');
+  container.className = 'export-card-container';
+
+  container.innerHTML = `
+    <div class="export-card">
+      <div class="export-card-inner">
+
+        <!-- TOP: Branding + ID + Stamp -->
+        <div class="export-card-top">
+          <div class="export-card-brand">
+            <div class="export-card-logo-icon">📜</div>
+            <div class="export-card-brand-text">
+              <div class="export-card-brand-title">Chai Archive</div>
+              <div class="export-card-brand-sub">Logbook · Museum Collection</div>
+            </div>
+          </div>
+          <div class="export-card-id-section">
+            <div class="export-card-id">${escHtml(archive.id)}</div>
+            <span class="export-card-category">${escHtml(archive.category)}</span>
+            <span class="export-card-date">${formatDate(archive.date || archive.createdAt)}</span>
+          </div>
+        </div>
+
+        <!-- PRESERVED STAMP -->
+        <div class="export-card-stamp">
+          <div class="export-card-stamp-inner">PRESERVED<br/>&bull; ${new Date(archive.createdAt).getFullYear()} &bull;</div>
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="export-card-divider"></div>
+
+        <!-- CENTER: Title, Description, Meta -->
+        <div class="export-card-content">
+          <div class="export-card-title">${escHtml(archive.title)}</div>
+          <div class="export-card-description">${escHtml(archive.description)}</div>
+
+          <div class="export-card-meta-row">
+            ${moodObj ? `<span class="export-card-mood"><span class="export-card-mood-emoji">${moodObj.emoji}</span> ${moodObj.label}</span>` : ''}
+            <span class="export-card-stars">
+              <span class="export-card-stars-filled">${stars}</span>
+              <span class="export-card-stars-empty">${starsEmpty}</span>
+            </span>
+            ${tags.length > 0 ? `
+            <span class="export-card-tags">
+              ${tags.map(t => `<span class="export-card-tag">${escHtml(t)}</span>`).join('')}
+              ${tagOverflow ? `<span class="export-card-tag">+${archive.tags.length - 4}</span>` : ''}
+            </span>` : ''}
+          </div>
+
+          ${archive.notes ? `<div class="export-card-notes">“ ${escHtml(archive.notes)} ”</div>` : ''}
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="export-card-divider"></div>
+
+        <!-- BOTTOM: QR + Slogan = Branding -->
+        <div class="export-card-bottom">
+          <div class="export-card-qr">
+            ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR" width="72" height="72" />` : `<span style="font-size:24px;opacity:0.3;">▣</span>`}
+          </div>
+          <div class="export-card-slogan-area">
+            <div class="export-card-motto">“ Preserve Today, Inspire Tomorrow ”</div>
+            <div class="export-card-branding-line">${escHtml(archive.id)} &bull; Chai Archive Logbook &bull; v1.0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Background watermark -->
+      <div class="export-card-watermark">${escHtml(archive.id)}</div>
+    </div>
+  `;
+
+  return container;
+}
+
+// ============================================================
 // EXPORTS
 // ============================================================
 async function exportPNG() {
-  const card = document.querySelector('#export-card');
-  if (!card) {
-    showToast('No archive card to export.', 'error');
+  const archive = getArchive(state.currentArchiveId);
+  if (!archive) {
+    showToast('No archive to export.', 'error');
     return;
   }
 
-  showToast('Generating PNG...', 'info');
+  showToast('Generating museum card PNG...', 'info');
+
+  const exportCard = buildExportCard(archive);
+  if (!exportCard) {
+    showToast('Failed to build export card.', 'error');
+    return;
+  }
+
+  document.body.appendChild(exportCard);
 
   try {
-    const archive = getArchive(state.currentArchiveId);
-    const canvas = await html2canvas(card, {
+    const cardEl = exportCard.querySelector('.export-card');
+
+    const canvas = await html2canvas(cardEl, {
       scale: 2,
       useCORS: true,
-      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim() || '#fffdf9',
+      backgroundColor: '#f6f1e7',
       logging: false,
-      allowTaint: false
+      allowTaint: false,
+      width: 1000,
+      height: 600
     });
 
     const link = document.createElement('a');
-    link.download = `${archive ? archive.id : 'archive'}.png`;
+    link.download = `${archive.id}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
-    showToast(`PNG saved: ${link.download}`, 'success');
+    showToast(`Museum card saved: ${link.download}`, 'success');
   } catch (err) {
     console.error('PNG export error:', err);
     showToast('Failed to generate PNG. Please try again.', 'error');
+  } finally {
+    document.body.removeChild(exportCard);
   }
 }
 
 async function exportPDF() {
-  const card = document.querySelector('#export-card');
-  if (!card) {
-    showToast('No archive card to export.', 'error');
+  const archive = getArchive(state.currentArchiveId);
+  if (!archive) {
+    showToast('No archive to export.', 'error');
     return;
   }
 
-  showToast('Generating PDF...', 'info');
+  showToast('Generating museum card PDF...', 'info');
+
+  const exportCard = buildExportCard(archive);
+  if (!exportCard) {
+    showToast('Failed to build export card.', 'error');
+    return;
+  }
+
+  document.body.appendChild(exportCard);
 
   try {
-    const archive = getArchive(state.currentArchiveId);
-    const canvas = await html2canvas(card, {
-      scale: 2,
+    const cardEl = exportCard.querySelector('.export-card');
+
+    const canvas = await html2canvas(cardEl, {
+      scale: 3,
       useCORS: true,
-      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim() || '#fffdf9',
+      backgroundColor: '#f6f1e7',
       logging: false,
-      allowTaint: false
+      allowTaint: false,
+      width: 1000,
+      height: 600
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('portrait', 'mm', 'a4');
+    const pdf = new jsPDF('landscape', 'mm', 'a4');
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    const margin = 10;
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 8;
+    const usableW = pdfWidth - margin * 2;
+    const usableH = pdfHeight - margin * 2;
 
-    pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth - margin * 2, pdfHeight * ((pdfWidth - margin * 2) / canvas.width));
-    pdf.save(`${archive ? archive.id : 'archive'}.pdf`);
-    showToast(`PDF saved: ${archive ? archive.id : 'archive'}.pdf`, 'success');
+    // Fit card into page while maintaining 1000:600 aspect ratio
+    const cardRatio = 1000 / 600;
+    const pageRatio = usableW / usableH;
+
+    let drawW, drawH;
+    if (cardRatio > pageRatio) {
+      drawW = usableW;
+      drawH = drawW / cardRatio;
+    } else {
+      drawH = usableH;
+      drawW = drawH * cardRatio;
+    }
+
+    const xOff = (pdfWidth - drawW) / 2;
+    const yOff = (pdfHeight - drawH) / 2;
+
+    pdf.addImage(imgData, 'JPEG', xOff, yOff, drawW, drawH);
+    pdf.save(`${archive.id}.pdf`);
+    showToast(`Museum card PDF saved: ${archive.id}.pdf`, 'success');
   } catch (err) {
     console.error('PDF export error:', err);
     showToast('Failed to generate PDF. Please try again.', 'error');
+  } finally {
+    document.body.removeChild(exportCard);
   }
 }
 
