@@ -876,7 +876,7 @@ function clearAllData() {
 
 // ============================================================
 // EXPORT CARD BUILDER (Premium Museum Artifact Card)
-// Fixed 1000×600 landscape card for PNG/PDF export
+// Fixed 1000x600 landscape card for PNG/PDF export
 // ============================================================
 function buildExportCard(archive) {
   if (!archive) return null;
@@ -975,7 +975,7 @@ function buildExportCard(archive) {
             </span>` : ''}
           </div>
 
-          ${archive.notes ? `<div class="export-card-notes">“ ${escHtml(archive.notes)} ”</div>` : ''}
+          ${archive.notes ? `<div class="export-card-notes">" ${escHtml(archive.notes)} "</div>` : ''}
         </div>
 
         <!-- DIVIDER -->
@@ -984,10 +984,10 @@ function buildExportCard(archive) {
         <!-- BOTTOM: QR + Slogan = Branding -->
         <div class="export-card-bottom">
           <div class="export-card-qr">
-            ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR" width="72" height="72" />` : `<span style="font-size:24px;opacity:0.3;">▣</span>`}
+            ${qrDataUrl ? `<img src="${qrDataUrl}" alt="QR" width="72" height="72" />` : `<span style="font-size:24px;opacity:0.3;">&#x25A3;</span>`}
           </div>
           <div class="export-card-slogan-area">
-            <div class="export-card-motto">“ Preserve Today, Inspire Tomorrow ”</div>
+            <div class="export-card-motto">" Preserve Today, Inspire Tomorrow "</div>
             <div class="export-card-branding-line">${escHtml(archive.id)} &bull; Chai Archive Logbook &bull; v1.0</div>
           </div>
         </div>
@@ -1047,6 +1047,11 @@ async function exportPNG() {
   }
 }
 
+// ============================================================
+// PDF EXPORT — renders the archive card via html2canvas,
+// then embeds the captured image into a card-sized PDF page.
+// No A4 page, no margins, no blank areas.
+// ============================================================
 async function exportPDF() {
   const archive = getArchive(state.currentArchiveId);
   if (!archive) {
@@ -1064,47 +1069,40 @@ async function exportPDF() {
 
   document.body.appendChild(exportCard);
 
+  const CARD_W = 1000;
+  const CARD_H = 600;
+
   try {
     const cardEl = exportCard.querySelector('.export-card');
 
+    // 1. Render the card to a high-res canvas via html2canvas
     const canvas = await html2canvas(cardEl, {
       scale: 3,
       useCORS: true,
       backgroundColor: '#f6f1e7',
       logging: false,
       allowTaint: false,
-      width: 1000,
-      height: 600
+      width: CARD_W,
+      height: CARD_H
     });
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    // 2. Convert canvas to PNG data URL
+    const imgData = canvas.toDataURL('image/png');
+
+    // 3. Create a jsPDF page sized exactly to the card (px units, landscape)
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('landscape', 'mm', 'a4');
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'px',
+      format: [CARD_W, CARD_H]
+    });
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    const margin = 8;
-    const usableW = pdfWidth - margin * 2;
-    const usableH = pdfHeight - margin * 2;
+    // 4. Place the card image at origin, filling the entire page
+    pdf.addImage(imgData, 'PNG', 0, 0, CARD_W, CARD_H);
 
-    // Fit card into page while maintaining 1000:600 aspect ratio
-    const cardRatio = 1000 / 600;
-    const pageRatio = usableW / usableH;
-
-    let drawW, drawH;
-    if (cardRatio > pageRatio) {
-      drawW = usableW;
-      drawH = drawW / cardRatio;
-    } else {
-      drawH = usableH;
-      drawW = drawH * cardRatio;
-    }
-
-    const xOff = (pdfWidth - drawW) / 2;
-    const yOff = (pdfHeight - drawH) / 2;
-
-    pdf.addImage(imgData, 'JPEG', xOff, yOff, drawW, drawH);
+    // 5. Save with the archive ID as filename
     pdf.save(`${archive.id}.pdf`);
+
     showToast(`Museum card PDF saved: ${archive.id}.pdf`, 'success');
   } catch (err) {
     console.error('PDF export error:', err);
