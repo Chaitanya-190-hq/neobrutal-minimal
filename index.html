@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Chai Archive Logbook — Preserve your memories, achievements, and life events in a timeless digital archive." />
+  <title>Chai Archive Logbook</title>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-icon">📜</span>
+        <div class="logo-text">
+          <span class="logo-title">Chai Archive</span>
+          <span class="logo-subtitle">Logbook</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard">
+        <span class="nav-icon">◈</span>
+        <span class="nav-label">Dashboard</span>
+      </button>
+      <button class="nav-item" data-page="archives">
+        <span class="nav-icon">📁</span>
+        <span class="nav-label">Archives</span>
+      </button>
+      <button class="nav-item" data-page="archive-form">
+        <span class="nav-icon">✎</span>
+        <span class="nav-label">New Archive</span>
+      </button>
+      <button class="nav-item" data-page="future-vault">
+        <span class="nav-icon">🔒</span>
+        <span class="nav-label">Future Vault</span>
+      </button>
+      <button class="nav-item" data-page="timeline">
+        <span class="nav-icon">⏳</span>
+        <span class="nav-label">Timeline</span>
+      </button>
+      <button class="nav-item" data-page="settings">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-label">Settings</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-stats">
+        <span id="sidebar-total">0 archives</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content" id="main-content">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1 class="page-title">Archive Dashboard</h1>
+        <p class="page-subtitle">Your personal digital preservation at a glance</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" id="stat-total">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Total Archives</div>
+        </div>
+        <div class="stat-card" id="stat-vault">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Vault Entries</div>
+        </div>
+        <div class="stat-card" id="stat-categories">
+          <div class="stat-value">0</div>
+          <div class="stat-label">Categories Used</div>
+        </div>
+        <div class="stat-card" id="stat-importance">
+          <div class="stat-value">★</div>
+          <div class="stat-label">Top Importance</div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card dash-card-full">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Category Distribution</h2>
+          </div>
+          <div class="dash-card-body">
+            <div class="category-bars" id="category-bars">
+              <div class="empty-state">No archives yet. Create your first archive to see distribution.</div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Recent Archives</h2>
+          </div>
+          <div class="dash-card-body">
+            <div class="recent-list" id="recent-list">
+              <div class="empty-state">No recent archives.</div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2 class="dash-card-title">Importance Overview</h2>
+          </div>
+          <div class="dash-card-body">
+            <div class="importance-bars" id="importance-bars">
+              <div class="empty-state">No data yet.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ARCHIVES LIST ==================== -->
+    <section class="page" id="page-archives">
+      <div class="page-header">
+        <h1 class="page-title">Archives</h1>
+        <p class="page-subtitle">Browse and manage your preserved records</p>
+      </div>
+
+      <div class="archive-toolbar">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input" placeholder="Search by title, category, tags, ID..." autocomplete="off" />
+        </div>
+        <div class="filter-group">
+          <select class="filter-select" id="filter-category">
+            <option value="all">All Categories</option>
+            <option value="Learning">Learning</option>
+            <option value="Python">Python</option>
+            <option value="Programming">Programming</option>
+            <option value="Certificates">Certificates</option>
+            <option value="Personal">Personal</option>
+            <option value="Milestones">Milestones</option>
+            <option value="Projects">Projects</option>
+            <option value="Discord">Discord</option>
+            <option value="Chai Archive">Chai Archive</option>
+            <option value="Future Vault">Future Vault</option>
+            <option value="Other">Other</option>
+          </select>
+          <select class="filter-select" id="filter-importance">
+            <option value="all">Any Importance</option>
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★☆</option>
+            <option value="3">★★★☆☆</option>
+            <option value="2">★★☆☆☆</option>
+            <option value="1">★☆☆☆☆</option>
+          </select>
+          <select class="filter-select" id="filter-sort">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="title">By Title</option>
+            <option value="importance">Importance ↓</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="archives-grid" id="archives-grid">
+        <div class="empty-state">No archives found. Create your first archive to begin preserving.</div>
+      </div>
+    </section>
+
+    <!-- ==================== ARCHIVE FORM (Create / Edit) ==================== -->
+    <section class="page" id="page-archive-form">
+      <div class="page-header">
+        <h1 class="page-title" id="form-title">New Archive Entry</h1>
+        <p class="page-subtitle" id="form-subtitle">Preserve a memory, achievement, or milestone</p>
+      </div>
+
+      <form class="archive-form" id="archive-form" novalidate>
+        <input type="hidden" id="archive-id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="field-title">Title <span class="required">*</span></label>
+            <input type="text" class="form-input" id="field-title" placeholder="Enter archive title" required />
+          </div>
+        </div>
+
+        <div class="form-row form-row-3">
+          <div class="form-group">
+            <label class="form-label" for="field-category">Category <span class="required">*</span></label>
+            <select class="form-input" id="field-category" required>
+              <option value="">Select category</option>
+              <option value="Learning">Learning</option>
+              <option value="Python">Python</option>
+              <option value="Programming">Programming</option>
+              <option value="Certificates">Certificates</option>
+              <option value="Personal">Personal</option>
+              <option value="Milestones">Milestones</option>
+              <option value="Projects">Projects</option>
+              <option value="Discord">Discord</option>
+              <option value="Chai Archive">Chai Archive</option>
+              <option value="Future Vault">Future Vault</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="field-date">Date <span class="required">*</span></label>
+            <input type="date" class="form-input" id="field-date" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="field-importance">Importance</label>
+            <div class="star-rating" id="star-rating">
+              <span class="star" data-value="1">☆</span>
+              <span class="star" data-value="2">☆</span>
+              <span class="star" data-value="3">☆</span>
+              <span class="star" data-value="4">☆</span>
+              <span class="star" data-value="5">☆</span>
+              <input type="hidden" id="field-importance" value="3" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="field-description">Description <span class="required">*</span></label>
+            <textarea class="form-input form-textarea" id="field-description" placeholder="Describe this archive entry in detail..." required></textarea>
+          </div>
+        </div>
+
+        <div class="form-row form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="field-tags">Tags</label>
+            <input type="text" class="form-input" id="field-tags" placeholder="e.g. python, learning, project" />
+            <span class="form-hint">Separate tags with commas</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="field-mood">Mood</label>
+            <select class="form-input" id="field-mood">
+              <option value="">Select mood</option>
+              <option value="triumphant">🏆 Triumphant</option>
+              <option value="grateful">🙏 Grateful</option>
+              <option value="excited">🎉 Excited</option>
+              <option value="reflective">🤔 Reflective</option>
+              <option value="proud">💪 Proud</option>
+              <option value="nostalgic">🌅 Nostalgic</option>
+              <option value="determined">🔥 Determined</option>
+              <option value="peaceful">☮️ Peaceful</option>
+              <option value="inspired">💡 Inspired</option>
+              <option value="accomplished">✨ Accomplished</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="field-notes">Personal Notes</label>
+            <textarea class="form-input form-textarea form-textarea-sm" id="field-notes" placeholder="Add private notes or reflections..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="field-future">Future Message</label>
+            <textarea class="form-input form-textarea form-textarea-sm" id="field-future" placeholder="Write a message to your future self about this moment..."></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="field-files">Related Files</label>
+            <input type="file" class="form-input" id="field-files" multiple />
+            <span class="form-hint">File names will be referenced. Files are stored locally in browser memory.</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="form-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="form-submit">
+            <span class="btn-icon">📜</span>
+            Preserve Archive
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ==================== ARCHIVE DETAIL ==================== -->
+    <section class="page" id="page-archive-detail">
+      <div class="page-header detail-header">
+        <button class="btn btn-ghost" id="detail-back">← Back to Archives</button>
+        <div class="detail-actions">
+          <button class="btn btn-secondary" id="detail-edit">✎ Edit</button>
+          <button class="btn btn-danger" id="detail-delete">🗑 Delete</button>
+        </div>
+      </div>
+
+      <div class="archive-card-wrapper" id="archive-card-wrapper">
+        <!-- Archive Card rendered by JS -->
+      </div>
+
+      <div class="export-actions">
+        <button class="btn btn-primary" id="export-png">
+          <span class="btn-icon">🖼</span>
+          Preserve as PNG
+        </button>
+        <button class="btn btn-secondary" id="export-pdf">
+          <span class="btn-icon">📄</span>
+          Export as PDF
+        </button>
+        <button class="btn btn-secondary" id="export-qr">
+          <span class="btn-icon">▣</span>
+          Generate QR Code
+        </button>
+        <button class="btn btn-secondary" id="export-json-single">
+          <span class="btn-icon">📋</span>
+          Export JSON
+        </button>
+      </div>
+
+      <div class="qr-modal-overlay hidden" id="qr-modal">
+        <div class="qr-modal">
+          <div class="qr-modal-header">
+            <h3>QR Code — Archive Entry</h3>
+            <button class="btn btn-ghost" id="qr-close">✕</button>
+          </div>
+          <div class="qr-modal-body">
+            <div id="qr-code"></div>
+            <p class="qr-label" id="qr-label">CA-0001</p>
+          </div>
+          <div class="qr-modal-footer">
+            <button class="btn btn-primary" id="qr-download">Download QR</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FUTURE VAULT ==================== -->
+    <section class="page" id="page-future-vault">
+      <div class="page-header">
+        <h1 class="page-title">🔒 Future Vault</h1>
+        <p class="page-subtitle">Secure references, serial numbers, and important future reminders</p>
+      </div>
+
+      <div class="vault-toolbar">
+        <button class="btn btn-primary" id="vault-new-entry">
+          <span class="btn-icon">➕</span>
+          New Vault Entry
+        </button>
+        <div class="search-wrapper search-wrapper-sm">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="vault-search" placeholder="Search vault..." autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="vault-list" id="vault-list">
+        <!-- Vault entries rendered by JS -->
+      </div>
+
+      <!-- Vault Form Modal -->
+      <div class="modal-overlay hidden" id="vault-modal">
+        <div class="modal">
+          <div class="modal-header">
+            <h3 id="vault-modal-title">New Vault Entry</h3>
+            <button class="btn btn-ghost" id="vault-modal-close">✕</button>
+          </div>
+          <form class="modal-body" id="vault-form">
+            <input type="hidden" id="vault-id" />
+            <div class="modal-form-row">
+              <div class="form-group">
+                <label class="form-label">Vault ID</label>
+                <div class="vault-id-display" id="vault-id-display">FV-0001</div>
+              </div>
+            </div>
+            <div class="modal-form-row">
+              <div class="form-group">
+                <label class="form-label" for="vault-title">Title <span class="required">*</span></label>
+                <input type="text" class="form-input" id="vault-title" placeholder="Enter vault entry title" required />
+              </div>
+            </div>
+            <div class="modal-form-row form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="vault-serial">Serial Number</label>
+                <input type="text" class="form-input" id="vault-serial" placeholder="e.g. SN-12345-ABC" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="vault-account">Account Reference</label>
+                <input type="text" class="form-input" id="vault-account" placeholder="e.g. ACCT-98765" />
+              </div>
+            </div>
+            <div class="modal-form-row form-row-2">
+              <div class="form-group">
+                <label class="form-label" for="vault-preservation">Preservation ID</label>
+                <input type="text" class="form-input" id="vault-preservation" placeholder="e.g. PRES-2024-001" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="vault-reminder">Future Reminder</label>
+                <input type="date" class="form-input" id="vault-reminder" />
+              </div>
+            </div>
+            <div class="modal-form-row">
+              <div class="form-group">
+                <label class="form-label" for="vault-reference">Important Reference</label>
+                <textarea class="form-input form-textarea form-textarea-sm" id="vault-reference" placeholder="Any important references or notes..."></textarea>
+              </div>
+            </div>
+            <div class="modal-form-actions">
+              <button type="button" class="btn btn-secondary" id="vault-form-cancel">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save to Vault</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Vault Detail Modal -->
+      <div class="modal-overlay hidden" id="vault-detail-modal">
+        <div class="modal modal-lg">
+          <div class="modal-header">
+            <h3 id="vault-detail-title">Vault Entry</h3>
+            <button class="btn btn-ghost" id="vault-detail-close">✕</button>
+          </div>
+          <div class="modal-body" id="vault-detail-body">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="vault-detail-edit">✎ Edit</button>
+            <button class="btn btn-danger" id="vault-detail-delete">🗑 Delete</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TIMELINE ==================== -->
+    <section class="page" id="page-timeline">
+      <div class="page-header">
+        <h1 class="page-title">⏳ Archive Timeline</h1>
+        <p class="page-subtitle">A chronological journey through your preserved moments</p>
+      </div>
+
+      <div class="timeline-controls">
+        <select class="filter-select" id="timeline-year">
+          <option value="all">All Years</option>
+        </select>
+        <select class="filter-select" id="timeline-category">
+          <option value="all">All Categories</option>
+          <option value="Learning">Learning</option>
+          <option value="Python">Python</option>
+          <option value="Programming">Programming</option>
+          <option value="Certificates">Certificates</option>
+          <option value="Personal">Personal</option>
+          <option value="Milestones">Milestones</option>
+          <option value="Projects">Projects</option>
+          <option value="Discord">Discord</option>
+          <option value="Chai Archive">Chai Archive</option>
+          <option value="Future Vault">Future Vault</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="timeline" id="timeline-container">
+        <div class="empty-state">No archives to display on the timeline.</div>
+      </div>
+    </section>
+
+    <!-- ==================== SETTINGS ==================== -->
+    <section class="page" id="page-settings">
+      <div class="page-header">
+        <h1 class="page-title">⚙ Settings</h1>
+        <p class="page-subtitle">Manage your archive preferences and data</p>
+      </div>
+
+      <div class="settings-section">
+        <h2 class="settings-section-title">Appearance</h2>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-info">
+              <span class="settings-label">Dark Mode</span>
+              <span class="settings-desc">Switch between light and dark theme</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="dark-mode-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <span class="settings-label">Print-Friendly Cards</span>
+              <span class="settings-desc">Optimize archive cards for printing</span>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="print-mode-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2 class="settings-section-title">Data Management</h2>
+        <div class="settings-card">
+          <div class="settings-row">
+            <div class="settings-info">
+              <span class="settings-label">Export All Archives (JSON)</span>
+              <span class="settings-desc">Download a complete backup of all your archives and vault entries</span>
+            </div>
+            <button class="btn btn-primary btn-sm" id="settings-export-json">Export</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info">
+              <span class="settings-label">Import Archives (JSON)</span>
+              <span class="settings-desc">Restore archives from a previously exported JSON file</span>
+            </div>
+            <label class="btn btn-secondary btn-sm upload-btn">
+              Import
+              <input type="file" id="settings-import-json" accept=".json" hidden />
+            </label>
+          </div>
+          <div class="settings-row settings-row-danger">
+            <div class="settings-info">
+              <span class="settings-label">Clear All Data</span>
+              <span class="settings-desc settings-desc-danger">Permanently delete all archives and vault entries</span>
+            </div>
+            <button class="btn btn-danger btn-sm" id="settings-clear-all">Clear All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h2 class="settings-section-title">Archive Information</h2>
+        <div class="settings-card">
+          <div class="settings-info-block">
+            <p><strong>Chai Archive Logbook</strong> v1.0</p>
+            <p>A personal digital preservation system. All data is stored locally in your browser.</p>
+            <p class="settings-meta">
+              Total Archives: <span id="settings-total">0</span> &nbsp;|&nbsp;
+              Vault Entries: <span id="settings-vault">0</span> &nbsp;|&nbsp;
+              Storage Used: <span id="settings-storage">0 KB</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay hidden" id="delete-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3>Confirm Deletion</h3>
+      <button class="btn btn-ghost" id="delete-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="delete-modal-text">Are you sure you want to delete this archive? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="delete-modal-cancel">Cancel</button>
+      <button class="btn btn-danger" id="delete-modal-confirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
